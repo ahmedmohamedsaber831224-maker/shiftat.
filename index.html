@@ -429,6 +429,24 @@
     </div>
     <!-- By place -->
     <div id="view-byplace" style="display:none;">
+      <!-- فلتر التاريخ لكل مكان -->
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:.72rem;color:var(--cyan);font-weight:800;margin-bottom:10px;">📅 فلتر لكل مكان على حده</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="flex:1;min-width:120px;">
+            <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px;font-weight:700;">من تاريخ</div>
+            <input type="date" id="bp-date-from" onchange="renderByPlace()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
+          </div>
+          <div style="flex:1;min-width:120px;">
+            <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px;font-weight:700;">لتاريخ</div>
+            <input type="date" id="bp-date-to" onchange="renderByPlace()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="month" id="bp-month" onchange="onBpMonthChange()" style="flex:1;background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;">
+          <button class="btn btn-out" onclick="clearBpFilter()" style="font-size:.75rem;padding:9px 12px;">كل الوقت</button>
+        </div>
+      </div>
       <div id="byplace-list"></div>
       <div class="salary-card">
         <div class="s-row stotal"><span class="lbl">📊 الإجمالي الكلي</span><span class="val" id="bp-gross">0 ج</span></div>
@@ -981,21 +999,67 @@ function renderSummary(){
   document.getElementById('net-salary').textContent=net.toLocaleString();
   document.getElementById('tax-pct-lbl').textContent=taxPct;
 
-  // by place
+  // by place — استدعاء منفصل عشان له فلتر مختلف
+  renderByPlace();
+}
+
+function onBpMonthChange(){
+  document.getElementById('bp-date-from').value='';
+  document.getElementById('bp-date-to').value='';
+  renderByPlace();
+}
+
+function clearBpFilter(){
+  document.getElementById('bp-month').value='';
+  document.getElementById('bp-date-from').value='';
+  document.getElementById('bp-date-to').value='';
+  renderByPlace();
+}
+
+function renderByPlace(){
+  const bm = document.getElementById('bp-month')?.value || '';
+  const bf = document.getElementById('bp-date-from')?.value || '';
+  const bt = document.getElementById('bp-date-to')?.value || '';
+
+  let list = [...shifts];
+  if(bm) list = list.filter(s => s.date.startsWith(bm));
+  else if(bf || bt){
+    list = list.filter(s => {
+      if(bf && s.date < bf) return false;
+      if(bt && s.date > bt) return false;
+      return true;
+    });
+  }
+
   const byPlace={};
   list.forEach(s=>{
     const k=s.placeId+'';
     if(!byPlace[k])byPlace[k]={name:s.placeName,placeId:s.placeId,base:0,extra:0,total:0,count:0};
     byPlace[k].base+=s.basePay;byPlace[k].extra+=s.extraPay;byPlace[k].total+=s.total;byPlace[k].count++;
   });
+
   const bpl=document.getElementById('byplace-list');
-  if(!Object.keys(byPlace).length){bpl.innerHTML='<div class="empty" style="padding:30px;"><p>لا بيانات</p></div>';['bp-gross','bp-tax','bp-net'].forEach(id=>document.getElementById(id).textContent='0 ج');return;}
+  if(!Object.keys(byPlace).length){
+    bpl.innerHTML='<div class="empty" style="padding:30px;"><p>لا بيانات في هذه الفترة</p></div>';
+    ['bp-gross','bp-tax','bp-net'].forEach(id=>document.getElementById(id).textContent='0 ج');
+    return;
+  }
   let bpG=0,bpT=0;
   bpl.innerHTML=Object.entries(byPlace).map(([pid,d])=>{
     const st=placeTax[pid]||0,ta=d.total*st/100,pn=d.total-ta;
     bpG+=d.total;bpT+=ta;
+    // عرض فترة الفلتر
+    let periodLabel = '';
+    if(bm) periodLabel = `<span class="tag tc" style="font-size:.62rem;">${bm}</span>`;
+    else if(bf||bt) periodLabel = `<span class="tag tc" style="font-size:.62rem;">${bf||'...'} ← ${bt||'...'}</span>`;
     return `<div class="pplace-card">
-      <div class="pplace-head"><div class="pplace-name">🏥 ${d.name} <span class="tag tc">${d.count} شيفت</span></div><div class="pplace-gross">${d.total.toLocaleString()} ج</div></div>
+      <div class="pplace-head">
+        <div>
+          <div class="pplace-name">🏥 ${d.name} <span class="tag tc">${d.count} شيفت</span></div>
+          <div style="margin-top:4px;">${periodLabel}</div>
+        </div>
+        <div class="pplace-gross">${d.total.toLocaleString()} ج</div>
+      </div>
       <div class="pplace-body">
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px;">
           <span class="tag tv">أساسي: ${d.base.toLocaleString()} ج</span>
