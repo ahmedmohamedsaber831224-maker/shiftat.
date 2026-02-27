@@ -295,16 +295,19 @@
     </div>
   </div>
 
-  <!-- Install Buttons — ثابتة دايماً -->
+  <!-- Install + Share Buttons -->
   <div id="install-row" style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-    <button id="install-android-btn" onclick="handleInstall('android')" style="flex:1;min-width:80px;background:linear-gradient(135deg,#1a73e8,#00e5ff);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+    <button id="install-android-btn" onclick="handleInstall('android')" style="flex:1;min-width:70px;background:linear-gradient(135deg,#1a73e8,#00e5ff);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
       🤖 أندرويد
     </button>
-    <button id="install-ios-btn" onclick="showIosInstructions()" style="flex:1;min-width:80px;background:linear-gradient(135deg,#1c1c1e,#3a3a3c);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+    <button id="install-ios-btn" onclick="showIosInstructions()" style="flex:1;min-width:70px;background:linear-gradient(135deg,#1c1c1e,#3a3a3c);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
        iPhone
     </button>
-    <button id="install-desktop-btn" onclick="handleInstall('desktop')" style="flex:1;min-width:80px;background:linear-gradient(135deg,#7c3aed,#00e5ff);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+    <button id="install-desktop-btn" onclick="handleInstall('desktop')" style="flex:1;min-width:70px;background:linear-gradient(135deg,#7c3aed,#00e5ff);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
       💻 كمبيوتر
+    </button>
+    <button onclick="shareApp()" style="flex:1;min-width:70px;background:linear-gradient(135deg,#00897b,#00e676);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+      🔗 مشاركة
     </button>
   </div>
   <!-- iOS Instructions -->
@@ -906,6 +909,21 @@ function handleInstall(type){
     }
   }
 }
+function shareApp(){
+  const url = window.location.href;
+  const text = 'سجل شيفتاتي ⚡ — تتبع ساعات عملك وأرباحك في كل مكان';
+  if(navigator.share){
+    navigator.share({ title: 'سجل شيفتاتي', text: text, url: url })
+      .catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(url).then(()=>{
+      showToast('📋 تم نسخ الرابط — شاركه مع زملائك!');
+    }).catch(()=>{
+      prompt('انسخ الرابط:', url);
+    });
+  }
+}
+
 function showIosInstructions(){
   const el = document.getElementById('ios-instructions');
   el.style.display = el.style.display==='none' ? 'block' : 'none';
@@ -1285,17 +1303,22 @@ function showToast(msg){
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded',()=>{
-  // اخفي أزرار التثبيت بس لو التطبيق متثبت فعلاً
+  // إخفاء أزرار التثبيت لو التطبيق متثبت فعلاً
   const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
   if(isStandalone){
-    const row = document.getElementById('install-row');
-    if(row) row.style.display = 'none';
+    // متثبت — اخفي أزرار التثبيت بس خلي المشاركة
+    ['install-android-btn','install-ios-btn','install-desktop-btn'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
   }
-  // بعد التثبيت اخفي الأزرار
+  // بعد التثبيت اخفي أزرار التثبيت أوتوماتيك
   window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
     if(e.matches){
-      const row = document.getElementById('install-row');
-      if(row) row.style.display = 'none';
+      ['install-android-btn','install-ios-btn','install-desktop-btn'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+      });
     }
   });
   document.getElementById('l-date').value=new Date().toISOString().split('T')[0];
