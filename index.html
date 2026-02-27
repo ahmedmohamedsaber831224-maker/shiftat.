@@ -467,10 +467,12 @@
       <button onclick="closeAdmin()" style="background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
     </div>
     <button class="btn btn-glow" style="margin-bottom:14px;" onclick="generateCode()">➕ توليد كود جديد</button>
-    <div id="new-code-display" style="display:none;background:var(--s3);border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;border:1px solid rgba(0,229,255,0.2);">
-      <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px;">الكود الجديد — ابعته للعميل</div>
-      <div id="new-code-val" style="font-size:1.4rem;font-weight:900;color:var(--cyan);letter-spacing:3px;font-family:monospace;"></div>
-      <button onclick="copyCode()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-family:Cairo,sans-serif;font-size:.75rem;cursor:pointer;margin-top:10px;">📋 نسخ الكود</button>
+    <div id="new-code-display" style="display:none;background:var(--s3);border-radius:12px;padding:16px;text-align:center;margin-bottom:14px;border:1px solid rgba(0,229,255,0.25);">
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">🎟️ الكود الجديد — ابعته للعميل على واتساب</div>
+      <div id="new-code-val" style="font-size:1.8rem;font-weight:900;color:var(--cyan);letter-spacing:5px;font-family:monospace;padding:10px;background:rgba(0,229,255,0.06);border-radius:10px;margin-bottom:10px;"></div>
+      <button onclick="copyCode()" style="background:linear-gradient(135deg,var(--violet),var(--cyan));border:none;color:#fff;padding:10px 20px;border-radius:10px;font-family:Cairo,sans-serif;font-size:.85rem;font-weight:800;cursor:pointer;width:100%;margin-bottom:10px;">📋 نسخ الكود وإرساله للعميل</button>
+      <a id="new-code-wa" href="#" target="_blank" style="display:block;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-family:Cairo,sans-serif;font-size:.85rem;font-weight:800;cursor:pointer;text-decoration:none;margin-bottom:10px;">💬 إرسال الكود على واتساب مباشرة</button>
+      <div id="new-code-copy-hint" style="font-size:.7rem;color:var(--orange);line-height:1.6;background:rgba(255,109,0,0.08);border-radius:8px;padding:8px;"></div>
     </div>
     <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;font-weight:700;">الأكواد السابقة:</div>
     <div class="admin-codes" id="admin-codes-list"></div>
@@ -520,14 +522,15 @@ function saveEditPlace(){
 const ADMIN_PASS = 'ALL831224';
 const FREE_LIMIT = 1;
 
-// ✅ Google Apps Script API — ضع رابط الـ Web App هنا بعد نشره
-// اتبع الخطوات في ملف README لإنشائه مجاناً
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzHq8qLs4tzic7xXRcyU_Us4hdRaCeRiktLkWBy6FHVLzvRHbnLz914AE5g16OLeUNA/exec';
+// ✅ أكواد التفعيل — أضف كود جديد في السطر ده وارفع الملف
+// الصيغة: 'الكود': false   (false = لسه ما اتستخدمش)
+const VALID_CODES = {
+  // 'XXXXXXXX': false,   ← أضف هنا
+};
 
 let isActivated = localStorage.getItem('sj_activated') === 'true';
 let isFreeMode  = localStorage.getItem('sj_freemode')  === 'true';
 let codesStore  = JSON.parse(localStorage.getItem('sj_codes') || '{}');
-// {  "CODEABC": { used: false, createdAt: "..." }  }
 function saveCodes(){ localStorage.setItem('sj_codes', JSON.stringify(codesStore)); }
 
 function checkActivation(){
@@ -556,56 +559,33 @@ function useFree(){
   showToast('✅ النسخة المجانية — مكان واحد فقط');
 }
 
-async function tryActivate(){
+function tryActivate(){
   const code = document.getElementById('act-code-input').value.trim().toUpperCase();
   const err  = document.getElementById('act-err');
-  const btn  = document.querySelector('.act-activate-btn');
   err.style.display='none';
   if(!code){ err.textContent='❌ أدخل الكود أولاً'; err.style.display='block'; return; }
 
-  // إذا مفيش رابط GAS — fallback لـ localStorage (وضع الأدمن)
-  if(!GAS_URL || GAS_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
-    // Fallback: تحقق من الأكواد المحفوظة محلياً (على جهاز الأدمن)
-    if(codesStore[code] && !codesStore[code].used){
-      codesStore[code].used = true;
-      codesStore[code].usedAt = new Date().toLocaleDateString('ar-EG');
-      saveCodes();
-      _activateSuccess();
-    } else {
-      err.textContent='❌ كود غير صحيح أو مستخدم من قبل';
-      err.style.display='block';
-      document.getElementById('act-code-input').value='';
-    }
-    return;
-  }
+  // الأكواد المستخدمة على الجهاز ده
+  const usedLocally = JSON.parse(localStorage.getItem('sj_used')||'[]');
 
-  // تحقق من Google Sheets عبر GAS
-  btn.textContent='⏳ جاري التحقق...';
-  btn.disabled=true;
-  try{
-    const res = await fetch(`${GAS_URL}?action=verify&code=${code}`);
-    const data = await res.json();
-    if(data.valid){
-      // علّم الكود كمستخدم
-      await fetch(`${GAS_URL}?action=use&code=${code}`);
-      _activateSuccess();
-    } else {
-      err.textContent = data.reason === 'used' ? '❌ هذا الكود تم استخدامه من قبل' : '❌ كود غير صحيح';
-      err.style.display='block';
-      document.getElementById('act-code-input').value='';
-    }
-  } catch(e){
-    err.textContent='⚠️ خطأ في الاتصال — تحقق من الإنترنت';
+  if(VALID_CODES.hasOwnProperty(code) && !usedLocally.includes(code)){
+    usedLocally.push(code);
+    localStorage.setItem('sj_used', JSON.stringify(usedLocally));
+    isActivated = true; isFreeMode = false;
+    localStorage.setItem('sj_activated','true');
+    localStorage.removeItem('sj_freemode');
+    document.getElementById('act-overlay').style.display='none';
+    document.getElementById('upgrade-banner').style.display='none';
+    showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
+  } else {
+    err.textContent = usedLocally.includes(code) ? '❌ هذا الكود تم استخدامه من قبل' : '❌ كود غير صحيح';
     err.style.display='block';
-  } finally{
-    btn.textContent='🔓 تفعيل النسخة الكاملة';
-    btn.disabled=false;
+    document.getElementById('act-code-input').value='';
   }
 }
 
 function _activateSuccess(){
-  isActivated = true;
-  isFreeMode  = false;
+  isActivated = true; isFreeMode = false;
   localStorage.setItem('sj_activated','true');
   localStorage.removeItem('sj_freemode');
   document.getElementById('act-overlay').style.display='none';
@@ -634,7 +614,7 @@ function openAdmin(){
 }
 function closeAdmin(){ document.getElementById('admin-overlay').classList.remove('show'); }
 
-async function generateCode(){
+function generateCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code='';
   for(let i=0;i<8;i++) code+=chars[Math.floor(Math.random()*chars.length)];
@@ -642,24 +622,21 @@ async function generateCode(){
   codesStore[code]={ used:false, createdAt };
   saveCodes();
   document.getElementById('new-code-val').textContent=code;
+  document.getElementById('new-code-copy-hint').textContent='⚠️ لتفعيل الكود: أضفه في VALID_CODES جوا الملف وارفعه على GitHub مرة تانية';
+  updateWaLink(code);
   document.getElementById('new-code-display').style.display='block';
   renderAdminCodes();
-  // رفع الكود للـ Google Sheet لو الرابط متعيّن
-  if(GAS_URL && GAS_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
-    try{
-      await fetch(`${GAS_URL}?action=add&code=${code}`);
-      showToast('✅ الكود: '+code+' — تم رفعه على الكلاود');
-    } catch(e){
-      showToast('⚠️ الكود محفوظ محلياً — تحقق من الإنترنت');
-    }
-  } else {
-    showToast('✅ الكود: '+code+' — محفوظ محلياً');
-  }
+  showToast('✅ الكود الجديد: '+code);
 }
 
 function copyCode(){
   const code=document.getElementById('new-code-val').textContent;
   navigator.clipboard?.writeText(code).then(()=>showToast('📋 تم نسخ الكود: '+code)).catch(()=>{});
+}
+function updateWaLink(code){
+  const msg = encodeURIComponent('مرحباً 🎉\nكود تفعيل تطبيق سجل شيفتاتي:\n' + code + '\n\nافتح التطبيق وادخل الكود في خانة التفعيل ✅');
+  const el = document.getElementById('new-code-wa');
+  if(el) el.href = 'https://wa.me/?text=' + msg;
 }
 
 function renderAdminCodes(){
