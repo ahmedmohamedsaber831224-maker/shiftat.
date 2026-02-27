@@ -193,6 +193,38 @@
   .install-banner p{font-size:.85rem;color:var(--text);}
   .install-banner.show{display:flex;}
 
+  /* ── ACTIVATION OVERLAY ── */
+  .act-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .act-box{background:var(--s1);border:1px solid rgba(0,229,255,0.2);border-radius:24px;padding:32px 24px;max-width:360px;width:100%;text-align:center;}
+  .act-icon{font-size:3rem;margin-bottom:14px;}
+  .act-title{font-size:1.3rem;font-weight:900;color:var(--cyan);margin-bottom:6px;}
+  .act-sub{font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+  .act-free-btn{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--cyan);padding:13px;border-radius:13px;width:100%;font-family:'Cairo',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;margin-bottom:10px;}
+  .act-pay-box{background:var(--s2);border-radius:16px;padding:16px;margin:16px 0;text-align:right;border:1px solid var(--border);}
+  .act-pay-title{font-size:.78rem;color:var(--muted);margin-bottom:10px;font-weight:700;text-align:center;}
+  .act-pay-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.82rem;}
+  .act-pay-row:last-child{margin-bottom:0;}
+  .act-pay-ico{font-size:1rem;}
+  .act-pay-num{font-weight:800;color:var(--text);direction:ltr;}
+  .act-pay-label{color:var(--muted);font-size:.75rem;}
+  .act-input{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:.95rem;outline:none;width:100%;margin-bottom:10px;text-align:center;letter-spacing:2px;}
+  .act-input:focus{border-color:var(--cyan);}
+  .act-activate-btn{background:linear-gradient(135deg,var(--violet),var(--cyan));color:#fff;padding:14px;border-radius:13px;width:100%;border:none;font-family:'Cairo',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;}
+  .act-err{color:var(--red);font-size:.8rem;margin-top:8px;display:none;}
+  .act-price-badge{display:inline-block;background:linear-gradient(135deg,var(--violet),var(--cyan));color:#fff;padding:6px 20px;border-radius:20px;font-size:1rem;font-weight:900;margin-bottom:16px;}
+
+  /* ── ADMIN PANEL ── */
+  .admin-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.98);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;}
+  .admin-overlay.show{display:flex;}
+  .admin-box{background:var(--s1);border:1px solid rgba(124,58,237,0.3);border-radius:24px;padding:28px 22px;max-width:380px;width:100%;}
+  .admin-title{font-size:1.1rem;font-weight:900;color:#a78bfa;margin-bottom:18px;text-align:center;}
+  .admin-codes{background:var(--s2);border-radius:14px;padding:14px;max-height:200px;overflow-y:auto;margin-bottom:14px;}
+  .code-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.82rem;}
+  .code-row:last-child{border:none;}
+  .code-val{font-family:monospace;color:var(--cyan);font-weight:700;letter-spacing:1px;}
+  .code-used{color:var(--red);font-size:.72rem;}
+  .code-ok{color:var(--green);font-size:.72rem;}
+
   @media print {
     body{background:#fff!important;color:#000!important;padding:0!important;}
     body::before,body::after{display:none!important;}
@@ -357,6 +389,48 @@
 
 </div><!-- /wrap -->
 
+<!-- ACTIVATION OVERLAY -->
+<div class="act-overlay" id="act-overlay">
+  <div class="act-box">
+    <div class="act-icon">⚡</div>
+    <div class="act-title">سجل شيفتاتي</div>
+    <div class="act-price-badge">200 جنيه — مدى الحياة</div>
+    <div class="act-sub">النسخة المجانية: مكان واحد فقط<br>النسخة الكاملة: أماكن غير محدودة</div>
+
+    <button class="act-free-btn" onclick="useFree()">🆓 استخدام النسخة المجانية (مكان واحد)</button>
+
+    <div class="act-pay-box">
+      <div class="act-pay-title">💳 للترقية — ادفع 200 جنيه على:</div>
+      <div class="act-pay-row"><span class="act-pay-ico">📱</span><div><div class="act-pay-num">01158760466</div><div class="act-pay-label">InstaPay / اتصالات كاش</div></div></div>
+      <div class="act-pay-row"><span class="act-pay-ico">📲</span><div><div class="act-pay-num">01116631624</div><div class="act-pay-label">Vodafone Cash</div></div></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:10px;text-align:center;">بعد الدفع هتاخد كود تفعيل على واتساب</div>
+    </div>
+
+    <input class="act-input" id="act-code-input" placeholder="أدخل كود التفعيل هنا" maxlength="20">
+    <button class="act-activate-btn" onclick="tryActivate()">🔓 تفعيل النسخة الكاملة</button>
+    <div class="act-err" id="act-err">❌ كود غير صحيح أو مستخدم من قبل</div>
+  </div>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="admin-title" style="margin:0;">🔐 لوحة التحكم</div>
+      <button onclick="closeAdmin()" style="background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+    <button class="btn btn-glow" style="margin-bottom:14px;" onclick="generateCode()">➕ توليد كود جديد</button>
+    <div id="new-code-display" style="display:none;background:var(--s3);border-radius:12px;padding:14px;text-align:center;margin-bottom:14px;border:1px solid rgba(0,229,255,0.2);">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:6px;">الكود الجديد — ابعته للعميل</div>
+      <div id="new-code-val" style="font-size:1.4rem;font-weight:900;color:var(--cyan);letter-spacing:3px;font-family:monospace;"></div>
+      <button onclick="copyCode()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-family:Cairo,sans-serif;font-size:.75rem;cursor:pointer;margin-top:10px;">📋 نسخ الكود</button>
+    </div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;font-weight:700;">الأكواد السابقة:</div>
+    <div class="admin-codes" id="admin-codes-list"></div>
+    <div style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:10px;">إجمالي الأكواد: <span id="codes-count" style="color:var(--cyan);font-weight:800;">0</span></div>
+  </div>
+</div>
+
 <!-- Bottom Nav -->
 <nav class="bnav">
   <button class="bnav-btn on" onclick="tab('places')"><span class="ico">🏥</span>الأماكن</button>
@@ -366,7 +440,115 @@
 </nav>
 
 <script>
-// ── DATA ──
+// ── ACTIVATION SYSTEM ──
+// باسورد لوحة التحكم — غيّره لحاجة تعرفها أنت بس
+const ADMIN_PASS = 'ADMIN_SHIFTAT_2025';
+const FREE_LIMIT = 1; // عدد الأماكن في النسخة المجانية
+
+let isActivated = localStorage.getItem('sj_activated') === 'true';
+let isFreeMode  = localStorage.getItem('sj_freemode')  === 'true';
+// الأكواد المتاحة والمستخدمة — بتتحفظ على جهازك أنت
+let codesStore  = JSON.parse(localStorage.getItem('sj_codes') || '{}');
+// {  "CODEABC": { used: false, createdAt: "..." }  }
+
+function saveCodes(){ localStorage.setItem('sj_codes', JSON.stringify(codesStore)); }
+
+function checkActivation(){
+  if(isActivated || isFreeMode){
+    document.getElementById('act-overlay').style.display='none';
+  } else {
+    document.getElementById('act-overlay').style.display='flex';
+  }
+}
+
+function useFree(){
+  isFreeMode = true;
+  localStorage.setItem('sj_freemode','true');
+  document.getElementById('act-overlay').style.display='none';
+  showToast('✅ النسخة المجانية — مكان واحد فقط');
+}
+
+function tryActivate(){
+  const code = document.getElementById('act-code-input').value.trim().toUpperCase();
+  const err  = document.getElementById('act-err');
+  if(!code){ err.style.display='block'; return; }
+
+  if(codesStore[code] && !codesStore[code].used){
+    // كود صحيح وغير مستخدم
+    codesStore[code].used = true;
+    codesStore[code].usedAt = new Date().toLocaleDateString('ar-EG');
+    saveCodes();
+    isActivated = true;
+    isFreeMode  = false;
+    localStorage.setItem('sj_activated','true');
+    localStorage.removeItem('sj_freemode');
+    document.getElementById('act-overlay').style.display='none';
+    showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
+  } else {
+    err.style.display='block';
+    document.getElementById('act-code-input').value='';
+  }
+}
+
+// ── فتح لوحة التحكم بالضغط 5 مرات على الهيدر ──
+let headerTaps=0, headerTimer=null;
+function headerTap(){
+  headerTaps++;
+  if(headerTimer) clearTimeout(headerTimer);
+  headerTimer = setTimeout(()=>{ headerTaps=0; }, 2000);
+  if(headerTaps >= 5){
+    headerTaps=0;
+    const pass = prompt('🔐 أدخل باسورد لوحة التحكم:');
+    if(pass === ADMIN_PASS){ openAdmin(); }
+    else if(pass !== null){ showToast('❌ باسورد غلط'); }
+  }
+}
+
+function openAdmin(){
+  renderAdminCodes();
+  document.getElementById('admin-overlay').classList.add('show');
+  document.getElementById('new-code-display').style.display='none';
+}
+function closeAdmin(){ document.getElementById('admin-overlay').classList.remove('show'); }
+
+function generateCode(){
+  // توليد كود عشوائي 8 أحرف
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code='';
+  for(let i=0;i<8;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  codesStore[code]={ used:false, createdAt: new Date().toLocaleDateString('ar-EG') };
+  saveCodes();
+  document.getElementById('new-code-val').textContent=code;
+  document.getElementById('new-code-display').style.display='block';
+  renderAdminCodes();
+}
+
+function copyCode(){
+  const code=document.getElementById('new-code-val').textContent;
+  navigator.clipboard?.writeText(code).then(()=>showToast('📋 تم نسخ الكود: '+code)).catch(()=>{});
+}
+
+function renderAdminCodes(){
+  const el=document.getElementById('admin-codes-list');
+  const entries=Object.entries(codesStore).reverse();
+  document.getElementById('codes-count').textContent=entries.length;
+  if(!entries.length){ el.innerHTML='<div style="color:var(--muted);font-size:.8rem;text-align:center;padding:10px;">لا يوجد أكواد بعد</div>'; return; }
+  el.innerHTML=entries.map(([code,info])=>`
+    <div class="code-row">
+      <span class="code-val">${code}</span>
+      <div style="text-align:left;">
+        ${info.used
+          ? `<div class="code-used">✓ مستخدم — ${info.usedAt||''}</div>`
+          : `<div class="code-ok">● متاح</div>`}
+        <div style="font-size:.68rem;color:var(--muted);">${info.createdAt||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── تقييد الأماكن في النسخة المجانية ──
+const _origAddPlace = typeof addPlace !== 'undefined' ? addPlace : null;
+
+
 let places   = JSON.parse(localStorage.getItem('sj_places')||'[]');
 let shifts   = JSON.parse(localStorage.getItem('sj_shifts') ||'[]');
 let placeTax = JSON.parse(localStorage.getItem('sj_ptax')  ||'{}');
@@ -407,6 +589,11 @@ function tab(name){
 
 // ── PLACES ──
 function addPlace(){
+  if(!isActivated && isFreeMode && places.length >= FREE_LIMIT){
+    showToast('⚠️ النسخة المجانية: مكان واحد فقط — فعّل للحصول على أماكن غير محدودة');
+    setTimeout(()=>{ document.getElementById('act-overlay').style.display='flex'; }, 1500);
+    return;
+  }
   const name=document.getElementById('p-name').value.trim();
   const type=document.getElementById('p-type').value;
   const price=parseFloat(document.getElementById('p-price').value)||0;
@@ -634,6 +821,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('s-month').value=ym;
   document.getElementById('f-month').value=ym;
   renderPlaces();populateSels();
+
+  // Header tap for admin
+  document.querySelector('.header').addEventListener('click', headerTap);
+
+  // Check activation on load
+  checkActivation();
 
   // Register SW
   if('serviceWorker' in navigator){
