@@ -521,36 +521,44 @@ function saveEditPlace(){
 // ── ACTIVATION SYSTEM ──
 const ADMIN_PASS = 'ALL831224';
 const FREE_LIMIT = 1;
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbx25NN1w7eG8cg1hcDkIue0zxYLEilnMe_92UOHloS8fmd4MzkzVB7k2Y1k_TnghTVw/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbz-vo0FCoiEJ7uw6tCeREs-3FyOREt5c3kIbVop-RuF06iNcfpCRiNzlkJIrzymEADQ/exec';
 
 let isActivated = localStorage.getItem('sj_activated') === 'true';
 let isFreeMode  = localStorage.getItem('sj_freemode')  === 'true';
 let codesStore  = JSON.parse(localStorage.getItem('sj_codes') || '{}');
 function saveCodes(){ localStorage.setItem('sj_codes', JSON.stringify(codesStore)); }
 
-// تحقق عبر Script Tag — يتجاوز CORS تماماً
+// تحقق عبر fetch مع no-cors fallback
 function gasCall(params){
-  return new Promise(function(resolve, reject){
-    const cb = '_g' + Date.now() + Math.floor(Math.random()*9999);
-    const timer = setTimeout(function(){
-      cleanup(); reject(new Error('timeout'));
-    }, 12000);
-    function cleanup(){
-      clearTimeout(timer);
-      delete window[cb];
-      const s = document.getElementById(cb);
-      if(s) s.remove();
-    }
-    window[cb] = function(data){ cleanup(); resolve(data); };
-    const qs = Object.entries(params).map(function(kv){
-      return kv[0]+'='+encodeURIComponent(kv[1]);
-    }).join('&');
-    const script = document.createElement('script');
-    script.id = cb;
-    script.src = GAS_URL+'?'+qs+'&callback='+cb;
-    script.onerror = function(){ cleanup(); reject(new Error('load_error')); };
-    document.head.appendChild(script);
-  });
+  const qs = Object.entries(params).map(function(kv){
+    return kv[0]+'='+encodeURIComponent(kv[1]);
+  }).join('&');
+  const url = GAS_URL+'?'+qs;
+  
+  // محاولة 1: fetch عادي
+  return fetch(url)
+    .then(function(r){ return r.json(); })
+    .catch(function(){
+      // محاولة 2: Script Tag مع callback
+      return new Promise(function(resolve, reject){
+        const cb = '_g' + Date.now() + Math.floor(Math.random()*9999);
+        const timer = setTimeout(function(){
+          cleanup(); reject(new Error('timeout'));
+        }, 15000);
+        function cleanup(){
+          clearTimeout(timer);
+          delete window[cb];
+          const s = document.getElementById(cb);
+          if(s) s.remove();
+        }
+        window[cb] = function(data){ cleanup(); resolve(data); };
+        const script = document.createElement('script');
+        script.id = cb;
+        script.src = url+'&callback='+cb;
+        script.onerror = function(){ cleanup(); reject(new Error('load_error')); };
+        document.head.appendChild(script);
+      });
+    });
 }
 
 function checkActivation(){
