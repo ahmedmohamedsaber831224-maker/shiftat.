@@ -521,17 +521,37 @@ function saveEditPlace(){
 // ── ACTIVATION SYSTEM ──
 const ADMIN_PASS = 'ALL831224';
 const FREE_LIMIT = 1;
-
-// ✅ أكواد التفعيل — أضف كود جديد في السطر ده وارفع الملف
-// الصيغة: 'الكود': false   (false = لسه ما اتستخدمش)
-const VALID_CODES = {
-  // 'XXXXXXXX': false,   ← أضف هنا
-};
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbx25NN1w7eG8cg1hcDkIue0zxYLEilnMe_92UOHloS8fmd4MzkzVB7k2Y1k_TnghTVw/exec';
 
 let isActivated = localStorage.getItem('sj_activated') === 'true';
 let isFreeMode  = localStorage.getItem('sj_freemode')  === 'true';
 let codesStore  = JSON.parse(localStorage.getItem('sj_codes') || '{}');
 function saveCodes(){ localStorage.setItem('sj_codes', JSON.stringify(codesStore)); }
+
+// تحقق عبر Script Tag — يتجاوز CORS تماماً
+function gasCall(params){
+  return new Promise(function(resolve, reject){
+    const cb = '_g' + Date.now() + Math.floor(Math.random()*9999);
+    const timer = setTimeout(function(){
+      cleanup(); reject(new Error('timeout'));
+    }, 12000);
+    function cleanup(){
+      clearTimeout(timer);
+      delete window[cb];
+      const s = document.getElementById(cb);
+      if(s) s.remove();
+    }
+    window[cb] = function(data){ cleanup(); resolve(data); };
+    const qs = Object.entries(params).map(function(kv){
+      return kv[0]+'='+encodeURIComponent(kv[1]);
+    }).join('&');
+    const script = document.createElement('script');
+    script.id = cb;
+    script.src = GAS_URL+'?'+qs+'&callback='+cb;
+    script.onerror = function(){ cleanup(); reject(new Error('load_error')); };
+    document.head.appendChild(script);
+  });
+}
 
 function checkActivation(){
   if(isActivated || isFreeMode){
@@ -548,7 +568,7 @@ function checkActivation(){
 
 function showUpgrade(){
   document.getElementById('act-overlay').style.display='flex';
-  setTimeout(()=>{ document.getElementById('act-code-input').focus(); }, 300);
+  setTimeout(function(){ document.getElementById('act-code-input').focus(); }, 300);
 }
 
 function useFree(){
@@ -559,33 +579,42 @@ function useFree(){
   showToast('✅ النسخة المجانية — مكان واحد فقط');
 }
 
-function tryActivate(){
+async function tryActivate(){
   const code = document.getElementById('act-code-input').value.trim().toUpperCase();
   const err  = document.getElementById('act-err');
+  const btn  = document.querySelector('.act-activate-btn');
   err.style.display='none';
   if(!code){ err.textContent='❌ أدخل الكود أولاً'; err.style.display='block'; return; }
 
-  // الأكواد المستخدمة على الجهاز ده
-  const usedLocally = JSON.parse(localStorage.getItem('sj_used')||'[]');
+  btn.textContent='⏳ جاري التحقق...';
+  btn.disabled=true;
 
-  if(VALID_CODES.hasOwnProperty(code) && !usedLocally.includes(code)){
-    usedLocally.push(code);
-    localStorage.setItem('sj_used', JSON.stringify(usedLocally));
-    isActivated = true; isFreeMode = false;
-    localStorage.setItem('sj_activated','true');
-    localStorage.removeItem('sj_freemode');
-    document.getElementById('act-overlay').style.display='none';
-    document.getElementById('upgrade-banner').style.display='none';
-    showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
-  } else {
-    err.textContent = usedLocally.includes(code) ? '❌ هذا الكود تم استخدامه من قبل' : '❌ كود غير صحيح';
+  try{
+    const res = await gasCall({action:'verify', code:code});
+    if(res.valid){
+      try{ await gasCall({action:'use', code:code}); }catch(e){}
+      isActivated=true; isFreeMode=false;
+      localStorage.setItem('sj_activated','true');
+      localStorage.removeItem('sj_freemode');
+      document.getElementById('act-overlay').style.display='none';
+      document.getElementById('upgrade-banner').style.display='none';
+      showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
+    } else {
+      err.textContent = res.reason==='used' ? '❌ هذا الكود تم استخدامه من قبل' : '❌ كود غير صحيح';
+      err.style.display='block';
+      document.getElementById('act-code-input').value='';
+    }
+  } catch(e){
+    err.textContent='⚠️ تأكد من الإنترنت وحاول مرة تانية';
     err.style.display='block';
-    document.getElementById('act-code-input').value='';
+  } finally{
+    btn.textContent='🔓 تفعيل النسخة الكاملة';
+    btn.disabled=false;
   }
 }
 
 function _activateSuccess(){
-  isActivated = true; isFreeMode = false;
+  isActivated=true; isFreeMode=false;
   localStorage.setItem('sj_activated','true');
   localStorage.removeItem('sj_freemode');
   document.getElementById('act-overlay').style.display='none';
@@ -614,19 +643,33 @@ function openAdmin(){
 }
 function closeAdmin(){ document.getElementById('admin-overlay').classList.remove('show'); }
 
-function generateCode(){
+async function generateCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code='';
   for(let i=0;i<8;i++) code+=chars[Math.floor(Math.random()*chars.length)];
-  const createdAt = new Date().toLocaleDateString('ar-EG');
-  codesStore[code]={ used:false, createdAt };
+  const createdAt=new Date().toLocaleDateString('ar-EG');
+
+  // حفظ محلي
+  codesStore[code]={used:false,createdAt};
   saveCodes();
+
+  // رفع على GAS
+  try{
+    await gasCall({action:'add', code:code});
+    showToast('✅ الكود '+code+' — جاهز للاستخدام ☁️');
+  } catch(e){
+    showToast('✅ الكود '+code+' — محفوظ محلياً');
+  }
+
+  // عرض الكود
   document.getElementById('new-code-val').textContent=code;
-  document.getElementById('new-code-copy-hint').textContent='⚠️ لتفعيل الكود: أضفه في VALID_CODES جوا الملف وارفعه على GitHub مرة تانية';
-  updateWaLink(code);
   document.getElementById('new-code-display').style.display='block';
+
+  // رابط واتساب جاهز
+  const msg=encodeURIComponent('مرحباً 🎉\nكود تفعيل تطبيق سجل شيفتاتي:\n\n'+code+'\n\nافتح التطبيق وادخل الكود في خانة التفعيل ✅\n'+window.location.origin+window.location.pathname);
+  document.getElementById('new-code-wa').href='https://wa.me/?text='+msg;
+
   renderAdminCodes();
-  showToast('✅ الكود الجديد: '+code);
 }
 
 function copyCode(){
