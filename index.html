@@ -251,6 +251,11 @@
     <div class="hbadge">⚡ SHIFT TRACKER</div>
     <h1><span class="hc" id="admin-trigger" style="cursor:pointer;">سجل</span> <span class="hw">شيفتاتي</span></h1>
     <p>تتبع ساعات عملك وأرباحك في كل مكان</p>
+    <div id="upgrade-banner" style="display:none;margin-top:12px;">
+      <button onclick="showUpgrade()" style="background:linear-gradient(135deg,#ff6d00,#ffd600);color:#000;border:none;padding:10px 22px;border-radius:25px;font-family:Cairo,sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;box-shadow:0 4px 15px rgba(255,109,0,0.4);">
+        ⚡ ترقية للنسخة الكاملة — 200 جنيه
+      </button>
+    </div>
   </div>
 
   <!-- Install Banner -->
@@ -520,12 +525,25 @@ function checkActivation(){
   } else {
     document.getElementById('act-overlay').style.display='flex';
   }
+  // لو نسخة مجانية يظهر زرار الترقية
+  if(isFreeMode && !isActivated){
+    document.getElementById('upgrade-banner').style.display='block';
+  } else {
+    document.getElementById('upgrade-banner').style.display='none';
+  }
+}
+
+function showUpgrade(){
+  // اظهر الـ overlay بس مع فوكس على خانة الكود
+  document.getElementById('act-overlay').style.display='flex';
+  setTimeout(()=>{ document.getElementById('act-code-input').focus(); }, 300);
 }
 
 function useFree(){
   isFreeMode = true;
   localStorage.setItem('sj_freemode','true');
   document.getElementById('act-overlay').style.display='none';
+  document.getElementById('upgrade-banner').style.display='block';
   showToast('✅ النسخة المجانية — مكان واحد فقط');
 }
 
@@ -544,6 +562,7 @@ function tryActivate(){
     localStorage.setItem('sj_activated','true');
     localStorage.removeItem('sj_freemode');
     document.getElementById('act-overlay').style.display='none';
+    document.getElementById('upgrade-banner').style.display='none';
     showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
   } else {
     err.style.display='block';
