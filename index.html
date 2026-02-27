@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="build-version" content="202602272259">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -281,17 +282,32 @@
     </div>
   </div>
 
-  <!-- Install Banner Android -->
-  <div class="install-banner" id="install-banner">
-    <p>📲 ثبّت التطبيق على شاشتك الرئيسية للوصول السريع!</p>
-    <button class="btn btn-glow" id="install-btn" onclick="installApp()">تثبيت التطبيق</button>
+  <!-- Install Buttons — ثابتة دايماً -->
+  <div id="install-row" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+    <button id="install-android-btn" onclick="handleInstall('android')" style="flex:1;min-width:140px;background:linear-gradient(135deg,#1a73e8,#00e5ff);border:none;color:#fff;padding:13px 16px;border-radius:14px;font-family:Cairo,sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span style="font-size:1.2rem;">🤖</span> تثبيت أندرويد
+    </button>
+    <button id="install-ios-btn" onclick="showIosInstructions()" style="flex:1;min-width:140px;background:linear-gradient(135deg,#1c1c1e,#3a3a3c);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:13px 16px;border-radius:14px;font-family:Cairo,sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span style="font-size:1.2rem;"></span> تثبيت iPhone
+    </button>
+    <button id="install-desktop-btn" onclick="handleInstall('desktop')" style="flex:1;min-width:140px;background:linear-gradient(135deg,#7c3aed,#00e5ff);border:none;color:#fff;padding:13px 16px;border-radius:14px;font-family:Cairo,sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span style="font-size:1.2rem;">💻</span> تثبيت كمبيوتر
+    </button>
   </div>
-  <!-- Install Banner iOS -->
-  <div class="install-banner" id="ios-banner" style="display:none;">
-    <p>📲 لتثبيت التطبيق على iPhone:</p>
-    <p style="font-size:.78rem;color:var(--muted);">اضغط على <strong style="color:var(--cyan);">زرار المشاركة</strong> ⬆️ ثم اختر <strong style="color:var(--cyan);">"إضافة إلى الشاشة الرئيسية"</strong></p>
-    <button class="btn btn-out" onclick="document.getElementById('ios-banner').style.display='none'">حسناً ✓</button>
+  <!-- iOS Instructions -->
+  <div id="ios-instructions" style="display:none;background:linear-gradient(135deg,rgba(0,0,0,0.95),rgba(30,30,30,0.98));border:1px solid rgba(0,229,255,0.3);border-radius:16px;padding:18px;margin-bottom:14px;text-align:center;">
+    <div style="font-size:1rem;font-weight:800;color:var(--cyan);margin-bottom:10px;"> تثبيت على iPhone / iPad</div>
+    <div style="font-size:.85rem;color:var(--text);line-height:2;">
+      1️⃣ افتح التطبيق في <strong style="color:var(--cyan);">Safari</strong> (مش Chrome)<br>
+      2️⃣ اضغط <strong style="color:var(--cyan);">زرار المشاركة ⬆️</strong> في أسفل الشاشة<br>
+      3️⃣ اختر <strong style="color:var(--cyan);">"إضافة إلى الشاشة الرئيسية"</strong><br>
+      4️⃣ اضغط <strong style="color:var(--cyan);">"إضافة"</strong> ✅
+    </div>
+    <button onclick="document.getElementById('ios-instructions').style.display='none'" style="margin-top:12px;background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:8px 20px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:700;cursor:pointer;">حسناً ✓</button>
   </div>
+  <!-- Legacy banners (hidden) -->
+  <div class="install-banner" id="install-banner" style="display:none!important;"></div>
+  <div class="install-banner" id="ios-banner" style="display:none!important;"></div>
 
   <!-- ══ PLACES ══ -->
   <div id="panel-places" class="panel on">
@@ -462,6 +478,52 @@
   </div>
 
 </div><!-- /wrap -->
+
+<!-- EDIT SHIFT MODAL -->
+<div class="modal-overlay" id="edit-shift-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-title">✏️ تعديل الشيفت</div>
+    <input type="hidden" id="es-id">
+    <div class="grid g2" style="margin-bottom:10px;">
+      <div class="field"><label>مكان العمل</label><select id="es-place"></select></div>
+      <div class="field"><label>التاريخ</label><input type="date" id="es-date"></div>
+    </div>
+    <div class="grid g2" style="margin-bottom:10px;">
+      <div class="field"><label>نوع الأجر</label>
+        <select id="es-pay-type">
+          <option value="hour">بالساعة</option>
+          <option value="shift">بالشيفت</option>
+          <option value="case">بالحالة</option>
+        </select>
+      </div>
+      <div class="field"><label>السعر</label><input type="number" id="es-pay-price" min="0"></div>
+    </div>
+    <div class="field" style="margin-bottom:10px;"><label>العدد</label><input type="number" id="es-count" min="0"></div>
+    <div class="grid g2" style="margin-bottom:6px;">
+      <div class="field"><label>ساعات إضافية</label><input type="number" id="es-exHC" min="0"></div>
+      <div class="field"><label>سعر الساعة الإضافية</label><input type="number" id="es-exHP" min="0"></div>
+    </div>
+    <div class="grid g2" style="margin-bottom:6px;">
+      <div class="field"><label>حالات عادية</label><input type="number" id="es-exCC" min="0"></div>
+      <div class="field"><label>سعر الحالة</label><input type="number" id="es-exCP" min="0"></div>
+    </div>
+    <div class="grid g2" style="margin-bottom:6px;">
+      <div class="field"><label>حالات تكنيك</label><input type="number" id="es-exTC" min="0"></div>
+      <div class="field"><label>سعر التكنيك</label><input type="number" id="es-exTP" min="0"></div>
+    </div>
+    <div class="grid g2" style="margin-bottom:10px;">
+      <div class="field"><label>حالات أخرى</label><input type="number" id="es-exOC" min="0"></div>
+      <div class="field"><label>سعر الحالة الأخرى</label><input type="number" id="es-exOP" min="0"></div>
+    </div>
+    <div class="field" style="margin-bottom:14px;"><label>ملاحظات</label><input type="text" id="es-note"></div>
+    <div class="grid g2">
+      <button class="btn btn-green" onclick="saveEditShift()" style="font-size:1rem;padding:16px;letter-spacing:1px;">
+        ✅ حفظ التعديل
+      </button>
+      <button class="btn btn-out" onclick="document.getElementById('edit-shift-modal').classList.remove('show')">❌ إلغاء</button>
+    </div>
+  </div>
+</div>
 
 <!-- EDIT PLACE MODAL -->
 <div class="modal-overlay" id="edit-modal">
@@ -780,14 +842,37 @@ let deferredPrompt=null;
 // ── PWA Install ──
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();deferredPrompt=e;
-  document.getElementById('install-banner').classList.add('show');
+  // كشف نوع الجهاز
+  const isMobile = /android/i.test(navigator.userAgent);
+  document.getElementById('install-row').style.display='flex';
+  if(isMobile){
+    document.getElementById('install-android-btn').style.display='flex';
+  } else {
+    document.getElementById('install-desktop-btn').style.display='flex';
+  }
 });
 window.addEventListener('appinstalled',()=>{
   document.getElementById('install-banner').classList.remove('show');
   showToast('✅ تم تثبيت التطبيق!');
 });
 function installApp(){
-  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('install-banner').classList.remove('show');});}
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; });
+  }
+}
+function handleInstall(type){
+  if(type==='android' || type==='desktop'){
+    if(deferredPrompt){
+      installApp();
+    } else {
+      showToast('📲 افتح التطبيق في Chrome وانتظر زرار التثبيت');
+    }
+  }
+}
+function showIosInstructions(){
+  const el = document.getElementById('ios-instructions');
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
 }
 
 // ── TABS ──
@@ -943,13 +1028,72 @@ function renderShifts(){
     return `<div class="shift-item">
       <div class="si-top">
         <div><div class="si-place">🏥 ${s.placeName}</div><div class="si-date">📅 ${fmtDate(s.date)}</div></div>
-        <div style="text-align:left;"><div class="si-amount">${s.total.toLocaleString()} ج</div><button class="btn btn-red" style="margin-top:5px;" onclick="deleteShift(${s.id})">🗑️</button></div>
+        <div style="text-align:left;">
+          <div class="si-amount">${s.total.toLocaleString()} ج</div>
+          <div style="display:flex;gap:5px;margin-top:5px;">
+            <button class="btn" style="background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:6px 10px;font-size:.75rem;" onclick="editShift(${s.id})">✏️</button>
+            <button class="btn btn-red" style="padding:6px 10px;font-size:.75rem;" onclick="deleteShift(${s.id})">🗑️</button>
+          </div>
+        </div>
       </div>
       <div class="si-tags">${tags.join('')}</div>
     </div>`;
   }).join('');
 }
 function deleteShift(id){if(!confirm('هتحذف الشيفت ده؟'))return;shifts=shifts.filter(s=>s.id!==id);save();renderShifts();}
+
+function editShift(id){
+  const s=shifts.find(x=>x.id===id);
+  if(!s)return;
+  // ملء أماكن العمل
+  const sel=document.getElementById('es-place');
+  sel.innerHTML=places.map(p=>'<option value="'+p.id+'"'+(p.id===s.placeId?' selected':'')+'>'+p.name+'</option>').join('');
+  // ملء البيانات
+  document.getElementById('es-id').value=id;
+  document.getElementById('es-date').value=s.date;
+  document.getElementById('es-pay-type').value=s.payType;
+  document.getElementById('es-pay-price').value=s.payPrice||0;
+  document.getElementById('es-count').value=s.count||0;
+  document.getElementById('es-exHC').value=s.exHC||0;
+  document.getElementById('es-exHP').value=s.exHP||0;
+  document.getElementById('es-exCC').value=s.exCC||0;
+  document.getElementById('es-exCP').value=s.exCP||0;
+  document.getElementById('es-exTC').value=s.exTC||0;
+  document.getElementById('es-exTP').value=s.exTP||0;
+  document.getElementById('es-exOC').value=s.exOC||0;
+  document.getElementById('es-exOP').value=s.exOP||0;
+  document.getElementById('es-note').value=s.note||'';
+  document.getElementById('edit-shift-modal').classList.add('show');
+}
+
+function saveEditShift(){
+  const id=parseInt(document.getElementById('es-id').value);
+  const idx=shifts.findIndex(x=>x.id===id);
+  if(idx===-1)return;
+  const pid=parseInt(document.getElementById('es-place').value);
+  const p=places.find(x=>x.id===pid);
+  if(!p){showToast('⚠️ اختر مكان العمل');return;}
+  const payType=document.getElementById('es-pay-type').value;
+  const payPrice=parseFloat(document.getElementById('es-pay-price').value)||0;
+  const count=parseFloat(document.getElementById('es-count').value)||0;
+  const exHC=parseFloat(document.getElementById('es-exHC').value)||0;
+  const exHP=parseFloat(document.getElementById('es-exHP').value)||0;
+  const exCC=parseFloat(document.getElementById('es-exCC').value)||0;
+  const exCP=parseFloat(document.getElementById('es-exCP').value)||0;
+  const exTC=parseFloat(document.getElementById('es-exTC').value)||0;
+  const exTP=parseFloat(document.getElementById('es-exTP').value)||0;
+  const exOC=parseFloat(document.getElementById('es-exOC').value)||0;
+  const exOP=parseFloat(document.getElementById('es-exOP').value)||0;
+  const note=document.getElementById('es-note').value.trim();
+  const basePay=payPrice*count;
+  const extraPay=exHC*exHP+exCC*exCP+exTC*exTP+exOC*exOP;
+  const total=basePay+extraPay;
+  shifts[idx]={...shifts[idx],placeId:pid,placeName:p.name,date:document.getElementById('es-date').value,payType,payPrice,count,exHC,exHP,exCC,exCP,exTC,exTP,exOC,exOP,extraPay,basePay,total,note};
+  save();
+  document.getElementById('edit-shift-modal').classList.remove('show');
+  renderShifts();
+  showToast('✅ تم التعديل! الإجمالي: '+total.toLocaleString()+' ج');
+}
 
 // ── SUMMARY ──
 function setView(v){
@@ -1109,7 +1253,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isInStandalone = window.navigator.standalone === true;
   if(isIOS && !isInStandalone){
-    document.getElementById('ios-banner').style.display='flex';
+    document.getElementById('install-row').style.display='flex';
+    document.getElementById('install-ios-btn').style.display='block';
   }
   document.getElementById('l-date').value=new Date().toISOString().split('T')[0];
   const now=new Date();
