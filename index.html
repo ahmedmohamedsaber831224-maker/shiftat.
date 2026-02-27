@@ -2,6 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#00e5ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1122,18 +1125,54 @@ document.addEventListener('DOMContentLoaded',()=>{
   checkActivation();
 
   // Register SW
-  // Service Worker inline - بدون ملف خارجي
+  // Service Worker — تحديث تلقائي فور رفع نسخة جديدة
   if('serviceWorker' in navigator){
+    const CACHE_VERSION = 'v' + new Date().toISOString().slice(0,10);
     const swCode = `
-      self.addEventListener('install', e => self.skipWaiting());
-      self.addEventListener('activate', e => self.clients.claim());
-      self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
-    `;
+      const CACHE = '${CACHE_VERSION}';
+      self.addEventListener('install', e => {
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(
+          caches.keys().then(keys =>
+            Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+          ).then(() => self.clients.claim())
+        );
+      });
+      self.addEventListener('fetch', e => {
+        // دايماً يجيب من الإنترنت أولاً — لو فشل يجيب من الـ Cache
+        e.respondWith(
+          fetch(e.request).then(res => {
+            if(res && res.status === 200){
+              const clone = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return res;
+          }).catch(() => caches.match(e.request))
+        );
+      });
+    `.replace('\${CACHE_VERSION}', CACHE_VERSION);
     const blob = new Blob([swCode], {type: 'application/javascript'});
     const swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).then(()=>{
-      console.log('SW registered ✅');
-    }).catch(e=>console.log('SW skipped'));
+    navigator.serviceWorker.register(swUrl).then(reg => {
+      // تحقق من وجود تحديث كل 60 ثانية
+      setInterval(() => reg.update(), 60000);
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
+            // يحدث الصفحة تلقائياً
+            window.location.reload();
+          }
+        });
+      });
+    }).catch(e => console.log('SW skipped'));
+    
+    // تحديث تلقائي لما الصفحة تتفتح
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
   }
 });
 </script>
