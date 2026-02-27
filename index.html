@@ -440,14 +440,14 @@
   <div class="act-box">
     <div class="act-icon">⚡</div>
     <div class="act-title">سجل شيفتاتي</div>
-    <div class="act-price-badge">200 جنيه — مدى الحياة</div>
-    <div class="act-sub">النسخة المجانية: مكان واحد فقط<br>النسخة الكاملة: أماكن غير محدودة</div>
+    <div class="act-price-badge">100 جنيه فقط</div>
+    <div class="act-sub">✅ مجاناً: مكان واحد + تسجيل شيفتات + ملخص كامل<br>⭐ مدفوع (100ج): أماكن غير محدودة</div>
 
     <a href="https://wa.me/201158760466?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B4%D8%AA%D8%B1%D9%8A%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%D8%A9%20%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84%D8%A9%20%D9%85%D9%86%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B3%D8%AC%D9%84%20%D8%B4%D9%8A%D9%81%D8%AA%D8%A7%D8%AA%D9%8A%20%F0%9F%92%B0" target="_blank" style="display:block;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:13px;border-radius:13px;font-family:Cairo,sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;text-decoration:none;text-align:center;margin-bottom:10px;box-shadow:0 4px 20px rgba(37,211,102,0.3);">💬 تواصل على واتساب للدفع والترقية</a>
-    <button class="act-free-btn" onclick="useFree()">🆓 استخدام النسخة المجانية (مكان واحد)</button>
+    <button class="act-free-btn" onclick="useFree()">🆓 استخدام النسخة المجانية</button>
 
     <div class="act-pay-box">
-      <div class="act-pay-title">💳 للترقية — ادفع 200 جنيه على:</div>
+      <div class="act-pay-title">💳 للترقية — ادفع 100 جنيه (مرة واحدة فقط) على:</div>
       <div class="act-pay-row"><span class="act-pay-ico">📱</span><div><div class="act-pay-num">01158760466</div><div class="act-pay-label">InstaPay / اتصالات كاش</div></div></div>
       <div class="act-pay-row"><span class="act-pay-ico">📲</span><div><div class="act-pay-num">01116631624</div><div class="act-pay-label">Vodafone Cash</div></div></div>
       <div style="font-size:.75rem;color:var(--muted);margin-top:10px;text-align:center;">بعد الدفع هتاخد كود تفعيل على واتساب</div>
@@ -576,7 +576,7 @@ function useFree(){
   localStorage.setItem('sj_freemode','true');
   document.getElementById('act-overlay').style.display='none';
   document.getElementById('upgrade-banner').style.display='block';
-  showToast('✅ النسخة المجانية — مكان واحد فقط');
+  showToast('✅ النسخة المجانية — مكان واحد + تسجيل شيفتات');
 }
 
 async function tryActivate(){
@@ -744,7 +744,7 @@ function tab(name){
 // ── PLACES ──
 function addPlace(){
   if(!isActivated && isFreeMode && places.length >= FREE_LIMIT){
-    showToast('⚠️ النسخة المجانية: مكان واحد فقط — فعّل للحصول على أماكن غير محدودة');
+    showToast('⚠️ النسخة المجانية: مكان واحد فقط — يمكنك تسجيل شيفتات ومشاهدة الملخص بحرية');
     setTimeout(()=>{ document.getElementById('act-overlay').style.display='flex'; }, 1500);
     return;
   }
