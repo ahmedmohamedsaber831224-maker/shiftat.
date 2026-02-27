@@ -193,6 +193,12 @@
   .install-banner p{font-size:.85rem;color:var(--text);}
   .install-banner.show{display:flex;}
 
+  /* ── EDIT MODAL ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.92);z-index:8000;display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--s1);border:1px solid rgba(0,229,255,0.2);border-radius:22px;padding:26px 22px;max-width:360px;width:100%;}
+  .modal-title{font-size:1rem;font-weight:800;color:var(--cyan);margin-bottom:18px;text-align:center;}
+
   /* ── ACTIVATION OVERLAY ── */
   .act-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
   .act-box{background:var(--s1);border:1px solid rgba(0,229,255,0.2);border-radius:24px;padding:32px 24px;max-width:360px;width:100%;text-align:center;}
@@ -243,7 +249,7 @@
 <div class="wrap">
   <div class="header">
     <div class="hbadge">⚡ SHIFT TRACKER</div>
-    <h1><span class="hc">سجل</span> <span class="hw">شيفتاتي</span></h1>
+    <h1><span class="hc" id="admin-trigger" style="cursor:pointer;">سجل</span> <span class="hw">شيفتاتي</span></h1>
     <p>تتبع ساعات عملك وأرباحك في كل مكان</p>
   </div>
 
@@ -389,6 +395,32 @@
 
 </div><!-- /wrap -->
 
+<!-- EDIT PLACE MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-title">✏️ تعديل مكان العمل</div>
+    <input type="hidden" id="edit-place-id">
+    <div class="grid" style="margin-bottom:14px;">
+      <div class="field"><label>اسم المكان</label><input type="text" id="edit-place-name" placeholder="اسم المكان"></div>
+      <div class="grid g2">
+        <div class="field">
+          <label>نوع الأجر</label>
+          <select id="edit-place-type">
+            <option value="hour">بالساعة</option>
+            <option value="shift">بالشيفت</option>
+            <option value="case">بالحالة</option>
+          </select>
+        </div>
+        <div class="field"><label>السعر (جنيه)</label><input type="number" id="edit-place-price" placeholder="0" min="0"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-green" style="flex:2;" onclick="saveEditPlace()">💾 حفظ التعديل</button>
+      <button class="btn btn-out" style="flex:1;" onclick="closeEditModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <!-- ACTIVATION OVERLAY -->
 <div class="act-overlay" id="act-overlay">
   <div class="act-box">
@@ -440,9 +472,38 @@
 </nav>
 
 <script>
+function openEditModal(id){
+  const p=places.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('edit-place-id').value=id;
+  document.getElementById('edit-place-name').value=p.name;
+  document.getElementById('edit-place-type').value=p.type;
+  document.getElementById('edit-place-price').value=p.price;
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEditModal(){
+  document.getElementById('edit-modal').classList.remove('show');
+}
+function saveEditPlace(){
+  const id=parseInt(document.getElementById('edit-place-id').value);
+  const name=document.getElementById('edit-place-name').value.trim();
+  const type=document.getElementById('edit-place-type').value;
+  const price=parseFloat(document.getElementById('edit-place-price').value)||0;
+  if(!name){showToast('⚠️ أدخل اسم المكان');return;}
+  const idx=places.findIndex(x=>x.id===id);
+  if(idx===-1)return;
+  places[idx]={...places[idx],name,type,price};
+  // تحديث اسم المكان في الشيفتات القديمة
+  shifts=shifts.map(s=>s.placeId===id?{...s,placeName:name}:s);
+  save();
+  closeEditModal();
+  renderPlaces();
+  showToast('✅ تم تعديل '+name);
+}
+
 // ── ACTIVATION SYSTEM ──
 // باسورد لوحة التحكم — غيّره لحاجة تعرفها أنت بس
-const ADMIN_PASS = 'ADMIN_SHIFTAT_2025';
+const ADMIN_PASS = 'ALL831224';
 const FREE_LIMIT = 1; // عدد الأماكن في النسخة المجانية
 
 let isActivated = localStorage.getItem('sj_activated') === 'true';
@@ -621,8 +682,8 @@ function renderPlaces(){
         <div class="pi-ico">🏥</div>
         <div><div class="pi-name">${p.name}</div><div class="pi-meta">${TYPE_LBL[p.type]} • ${p.price.toLocaleString()} ج</div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="pi-price">${p.price.toLocaleString()} ج</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn btn-out" style="padding:7px 13px;font-size:.78rem;border-color:rgba(0,229,255,0.3);color:var(--cyan);" onclick="openEditModal(${p.id})">✏️ تعديل</button>
         <button class="btn btn-red" onclick="deletePlace(${p.id})">🗑️</button>
       </div>
     </div>`).join('');
@@ -822,8 +883,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('f-month').value=ym;
   renderPlaces();populateSels();
 
-  // Header tap for admin
-  document.querySelector('.header').addEventListener('click', headerTap);
+  // Header tap for admin — على كلمة "سجل" بس
+  document.getElementById('admin-trigger').addEventListener('click', headerTap);
 
   // Check activation on load
   checkActivation();
