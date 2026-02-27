@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#00e5ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="شيفتاتي">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>⚡ سجل شيفتاتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#060b14; --s1:#0d1525; --s2:#111e33; --s3:#162440;
+    --cyan:#00e5ff; --violet:#7c3aed; --green:#00e676;
+    --orange:#ff6d00; --red:#ff1744; --yellow:#ffd600;
+    --text:#e8f0fe; --muted:#546e7a; --border:rgba(0,229,255,0.08);
+    --safe-top: env(safe-area-inset-top);
+    --safe-bot: env(safe-area-inset-bottom);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{height:100%;}
+  body{
+    font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);
+    min-height:100vh;overflow-x:hidden;
+    padding-top:var(--safe-top);
+    padding-bottom:calc(70px + var(--safe-bot));
+  }
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  body::after{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 15% 20%,rgba(124,58,237,0.12) 0%,transparent 40%),radial-gradient(ellipse at 85% 80%,rgba(0,229,255,0.08) 0%,transparent 40%);pointer-events:none;z-index:0;}
+
+  .wrap{max-width:480px;margin:0 auto;padding:16px 16px 0;position:relative;z-index:1;}
+
+  /* ── HEADER ── */
+  .header{padding:24px 0 20px;text-align:center;}
+  .hbadge{display:inline-block;background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);color:#a78bfa;font-size:.68rem;padding:3px 14px;border-radius:20px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+  .header h1{font-size:2.2rem;font-weight:900;letter-spacing:-1.5px;}
+  .hc{color:var(--cyan);text-shadow:0 0 30px rgba(0,229,255,0.5);}
+  .hw{color:var(--text);}
+  .header p{color:var(--muted);margin-top:6px;font-size:.85rem;}
+
+  /* ── BOTTOM NAV ── */
+  .bnav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:rgba(13,21,37,0.95);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);
+    display:flex;
+    padding-bottom:var(--safe-bot);
+    z-index:100;
+  }
+  .bnav-btn{
+    flex:1;padding:12px 4px 10px;border:none;background:transparent;
+    color:var(--muted);font-family:'Cairo',sans-serif;font-size:.65rem;
+    font-weight:700;cursor:pointer;transition:all .25s;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  .bnav-btn .ico{font-size:1.3rem;transition:transform .25s;}
+  .bnav-btn.on{color:var(--cyan);}
+  .bnav-btn.on .ico{transform:scale(1.2);}
+  .bnav-btn:active .ico{transform:scale(0.9);}
+
+  /* ── PANEL ── */
+  .panel{display:none;animation:fadeUp .3s ease;}
+  .panel.on{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ── CARD ── */
+  .card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;}
+  .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .ct{font-size:.92rem;font-weight:800;color:var(--cyan);display:flex;align-items:center;gap:7px;}
+
+  /* ── GRID ── */
+  .grid{display:grid;gap:12px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:1fr 1fr 1fr;}
+
+  /* ── FIELD ── */
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:.7rem;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+  .field input,.field select{background:var(--s2);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:13px 14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:.95rem;outline:none;transition:all .25s;width:100%;-webkit-appearance:none;}
+  .field input:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.08);background:var(--s3);}
+  .field select option{background:var(--s2);}
+  .field input::placeholder{color:var(--muted);opacity:.6;}
+
+  /* ── BUTTONS ── */
+  .btn{padding:14px 20px;border:none;border-radius:13px;font-family:'Cairo',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;justify-content:center;gap:7px;-webkit-appearance:none;}
+  .btn:active{transform:scale(0.97);}
+  .btn-glow{background:linear-gradient(135deg,var(--violet),var(--cyan));color:#fff;width:100%;box-shadow:0 4px 20px rgba(124,58,237,0.3);}
+  .btn-green{background:linear-gradient(135deg,#00897b,var(--green));color:#000;width:100%;box-shadow:0 4px 20px rgba(0,230,118,0.2);}
+  .btn-red{background:rgba(255,23,68,0.1);color:var(--red);border:1px solid rgba(255,23,68,0.22);padding:8px 13px;font-size:.78rem;border-radius:10px;}
+  .btn-out{background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px 14px;font-size:.8rem;}
+  .btn-out:hover{border-color:var(--cyan);color:var(--cyan);}
+  .btn-pdf{background:linear-gradient(135deg,#b91c1c,var(--orange));color:#fff;width:100%;padding:15px;font-size:.95rem;}
+
+  /* ── PLACE ITEMS ── */
+  .place-item{display:flex;justify-content:space-between;align-items:center;background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .pi-l{display:flex;align-items:center;gap:12px;}
+  .pi-ico{width:42px;height:42px;background:linear-gradient(135deg,var(--violet),#0891b2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+  .pi-name{font-weight:800;font-size:.92rem;}
+  .pi-meta{font-size:.72rem;color:var(--muted);margin-top:2px;}
+  .pi-price{font-size:.88rem;font-weight:800;color:var(--cyan);}
+
+  /* ── SHIFT ITEMS ── */
+  .shift-item{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:11px;position:relative;overflow:hidden;}
+  .shift-item::before{content:'';position:absolute;right:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--cyan),var(--violet));}
+  .si-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+  .si-place{font-weight:800;font-size:.95rem;}
+  .si-date{font-size:.72rem;color:var(--muted);margin-top:2px;}
+  .si-amount{font-size:1.3rem;font-weight:900;color:var(--green);}
+  .si-tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;}
+  .tc{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.2);}
+  .tv{background:rgba(124,58,237,0.1);color:#a78bfa;border:1px solid rgba(124,58,237,0.2);}
+  .tg{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2);}
+  .to{background:rgba(255,109,0,0.1);color:var(--orange);border:1px solid rgba(255,109,0,0.2);}
+  .ty{background:rgba(255,214,0,0.1);color:var(--yellow);border:1px solid rgba(255,214,0,0.2);}
+
+  /* ── STATS ── */
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .stat-box{background:var(--s2);border:1px solid var(--border);border-radius:15px;padding:16px 10px;text-align:center;position:relative;overflow:hidden;}
+  .stat-box::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+  .stat-box.c::after{background:var(--cyan);}
+  .stat-box.v::after{background:var(--violet);}
+  .stat-box.g::after{background:var(--green);}
+  .stat-num{font-size:1.6rem;font-weight:900;line-height:1;margin-bottom:4px;}
+  .stat-box.c .stat-num{color:var(--cyan);}
+  .stat-box.v .stat-num{color:#a78bfa;}
+  .stat-box.g .stat-num{color:var(--green);}
+  .stat-lbl{font-size:.68rem;color:var(--muted);font-weight:600;}
+
+  /* ── SALARY ── */
+  .salary-card{background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(0,229,255,0.07));border:1px solid rgba(0,229,255,0.18);border-radius:20px;padding:22px;margin-bottom:16px;}
+  .big-num{text-align:center;padding:10px 0 18px;}
+  .bn-lbl{font-size:.78rem;color:var(--muted);margin-bottom:6px;}
+  .bn-val{font-size:3.2rem;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+  .bn-curr{font-size:.78rem;color:var(--muted);margin-top:4px;}
+  .s-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-size:.85rem;}
+  .s-row:last-child{border:none;}
+  .s-row .lbl{color:var(--muted);}
+  .s-row .val{font-weight:800;}
+  .s-row.stotal .lbl{color:var(--text);font-weight:800;}
+  .s-row.stotal .val{color:var(--green);}
+  .s-row.stax .val{color:var(--red);}
+  .s-row.snet .lbl{color:var(--cyan);font-weight:800;}
+  .s-row.snet .val{color:var(--cyan);font-size:1.3rem;font-weight:900;}
+
+  /* ── PER-PLACE CARD ── */
+  .pplace-card{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px;}
+  .pplace-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .pplace-name{font-weight:800;font-size:.9rem;}
+  .pplace-gross{font-size:1rem;font-weight:900;color:var(--green);}
+  .pplace-body{padding-top:12px;border-top:1px solid var(--border);}
+  .tax-inline{display:flex;align-items:center;gap:8px;background:var(--s3);border-radius:11px;padding:10px 13px;margin-top:10px;border:1px solid var(--border);}
+  .tax-inline label{font-size:.74rem;color:var(--muted);font-weight:700;flex:1;}
+  .tax-inline input{width:65px;background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:8px 8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:.88rem;outline:none;text-align:center;}
+  .tax-inline input:focus{border-color:var(--cyan);}
+  .tax-inline span{color:var(--orange);font-weight:800;}
+  .pplace-result{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:11px 13px;background:rgba(0,229,255,0.04);border-radius:10px;border:1px solid rgba(0,229,255,0.1);}
+  .pplace-result .rl{font-size:.74rem;color:var(--muted);}
+  .pplace-result .rv{font-size:1rem;font-weight:900;color:var(--cyan);}
+
+  /* ── MISC ── */
+  .sec-title{font-size:.7rem;color:var(--muted);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:12px;padding-right:10px;border-right:3px solid var(--cyan);}
+  .extra-box{background:rgba(0,229,255,0.03);border:1px dashed rgba(0,229,255,0.14);border-radius:14px;padding:16px;margin-top:13px;}
+  .extra-head{font-size:.74rem;color:var(--cyan);font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:13px;}
+  .div{height:1px;background:var(--border);margin:16px 0;}
+  .filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  .filter-row select,.filter-row input[type=month]{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'Cairo',sans-serif;font-size:.8rem;outline:none;-webkit-appearance:none;flex:1;}
+  .flbl{font-size:.8rem;color:var(--muted);white-space:nowrap;}
+  .gtax-row{display:flex;align-items:center;gap:10px;background:var(--s3);border-radius:12px;padding:12px 14px;margin-bottom:14px;border:1px solid var(--border);}
+  .gtax-row label{font-size:.78rem;color:var(--muted);font-weight:700;flex:1;}
+  .gtax-row input{width:65px;background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:8px 8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:.88rem;outline:none;text-align:center;}
+  .gtax-row span{color:var(--orange);font-weight:800;}
+  .vtoggle{display:flex;gap:6px;margin-bottom:14px;}
+  .vtbtn{flex:1;padding:10px 6px;border:1px solid var(--border);background:transparent;border-radius:10px;color:var(--muted);font-family:'Cairo',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:all .25s;}
+  .vtbtn.on{background:linear-gradient(135deg,var(--violet),#0891b2);color:#fff;border-color:transparent;}
+  .empty{text-align:center;padding:50px 20px;color:var(--muted);}
+  .empty .ico{font-size:3rem;opacity:.35;margin-bottom:10px;}
+  .empty p{font-size:.85rem;}
+
+  /* Preview box */
+  .preview-box{background:var(--s3);border-radius:12px;padding:12px 16px;margin-top:12px;border:1px solid rgba(0,229,255,0.12);display:none;}
+  .preview-lbl{font-size:.72rem;color:var(--muted);margin-bottom:4px;}
+  .preview-val{font-size:1.4rem;font-weight:900;color:var(--green);}
+
+  /* Install banner */
+  .install-banner{display:none;background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(0,229,255,0.1));border:1px solid rgba(0,229,255,0.2);border-radius:16px;padding:16px;margin-bottom:14px;flex-direction:column;gap:10px;}
+  .install-banner p{font-size:.85rem;color:var(--text);}
+  .install-banner.show{display:flex;}
+
+  @media print {
+    body{background:#fff!important;color:#000!important;padding:0!important;}
+    body::before,body::after{display:none!important;}
+    .bnav,.btn,.filter-row,.vtoggle,.install-banner{display:none!important;}
+    .panel{display:block!important;}
+    #panel-summary{display:block!important;}
+    #panel-places,#panel-log,#panel-shifts{display:none!important;}
+    *{color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;box-shadow:none!important;}
+    .card,.salary-card,.pplace-card,.stat-box{border:1px solid #ddd!important;background:#fff!important;}
+    .print-hdr{display:block!important;}
+  }
+  .print-hdr{display:none;text-align:center;margin-bottom:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="hbadge">⚡ SHIFT TRACKER</div>
+    <h1><span class="hc">سجل</span> <span class="hw">شيفتاتي</span></h1>
+    <p>تتبع ساعات عملك وأرباحك في كل مكان</p>
+  </div>
+
+  <!-- Install Banner -->
+  <div class="install-banner" id="install-banner">
+    <p>📲 ثبّت التطبيق على شاشتك الرئيسية للوصول السريع!</p>
+    <button class="btn btn-glow" id="install-btn" onclick="installApp()">تثبيت التطبيق</button>
+  </div>
+
+  <!-- ══ PLACES ══ -->
+  <div id="panel-places" class="panel on">
+    <div class="card">
+      <div class="ch"><span class="ct">🏥 إضافة مكان عمل جديد</span></div>
+      <div class="grid">
+        <div class="field"><label>اسم المكان</label><input type="text" id="p-name" placeholder="مثال: مستشفى النور"></div>
+        <div class="grid g2">
+          <div class="field">
+            <label>نوع الأجر</label>
+            <select id="p-type"><option value="hour">بالساعة</option><option value="shift">بالشيفت</option><option value="case">بالحالة</option></select>
+          </div>
+          <div class="field"><label>السعر (جنيه)</label><input type="number" id="p-price" placeholder="0" min="0"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;"><button class="btn btn-glow" onclick="addPlace()">🏥 إضافة المكان</button></div>
+    </div>
+    <div class="sec-title" id="places-sec-title" style="display:none">أماكن العمل المسجلة</div>
+    <div id="places-list"><div class="empty"><div class="ico">🏥</div><p>لم تضف أي أماكن بعد</p></div></div>
+  </div>
+
+  <!-- ══ LOG ══ -->
+  <div id="panel-log" class="panel">
+    <div class="card">
+      <div class="ch"><span class="ct">➕ شيفت جديد</span></div>
+      <div class="grid g2">
+        <div class="field">
+          <label>مكان العمل</label>
+          <select id="l-place" onchange="onPlaceChange()"><option value="">اختر...</option></select>
+        </div>
+        <div class="field"><label>التاريخ</label><input type="date" id="l-date"></div>
+      </div>
+      <div id="l-no-place" style="color:var(--muted);font-size:.85rem;text-align:center;padding:22px 0;">⬆️ اختر مكان عمل أولاً</div>
+      <div id="l-fields" style="display:none;">
+        <div class="div"></div>
+        <div class="sec-title">نوع الأجر والسعر</div>
+        <div class="grid g3" style="margin-bottom:12px;">
+          <div class="field">
+            <label>نوع الأجر</label>
+            <select id="l-pay-type" onchange="onPayTypeChange()">
+              <option value="hour">ساعة</option>
+              <option value="shift">شيفت</option>
+              <option value="case">حالة</option>
+            </select>
+          </div>
+          <div class="field"><label>السعر</label><input type="number" id="l-pay-price" placeholder="0" min="0" oninput="updatePreview()"></div>
+          <div class="field"><label id="l-count-lbl">العدد</label><input type="number" id="l-count" placeholder="0" min="0" oninput="updatePreview()"></div>
+        </div>
+        <div class="extra-box">
+          <div class="extra-head">⚡ الإضافي</div>
+          <div class="grid g2" style="margin-bottom:10px;">
+            <div class="field"><label>ساعات إضافية</label><input type="number" id="l-ex-hour-count" placeholder="0" min="0" oninput="updatePreview()"></div>
+            <div class="field"><label>سعر الساعة</label><input type="number" id="l-ex-hour-price" placeholder="0" min="0" oninput="updatePreview()"></div>
+          </div>
+          <div class="grid g2" style="margin-bottom:10px;">
+            <div class="field"><label>حالات عادية</label><input type="number" id="l-ex-case-count" placeholder="0" min="0" oninput="updatePreview()"></div>
+            <div class="field"><label>سعر الحالة</label><input type="number" id="l-ex-case-price" placeholder="0" min="0" oninput="updatePreview()"></div>
+          </div>
+          <div class="grid g2">
+            <div class="field"><label>حالات تكنيك</label><input type="number" id="l-ex-tech-count" placeholder="0" min="0" oninput="updatePreview()"></div>
+            <div class="field"><label>سعر التكنيك</label><input type="number" id="l-ex-tech-price" placeholder="0" min="0" oninput="updatePreview()"></div>
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>ملاحظات</label>
+          <input type="text" id="l-note" placeholder="أي ملاحظة...">
+        </div>
+        <div class="preview-box" id="l-preview">
+          <div class="preview-lbl">الإجمالي المتوقع</div>
+          <div class="preview-val" id="l-preview-val">0 ج</div>
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-green" onclick="saveShift()">💾 حفظ الشيفت</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SHIFTS ══ -->
+  <div id="panel-shifts" class="panel">
+    <div class="filter-row">
+      <select id="f-place" onchange="renderShifts()"><option value="">كل الأماكن</option></select>
+      <input type="month" id="f-month" onchange="renderShifts()">
+      <button class="btn btn-out" onclick="clearFilters()">✕</button>
+    </div>
+    <div id="shifts-list"><div class="empty"><div class="ico">📋</div><p>لا يوجد شيفتات بعد</p></div></div>
+  </div>
+
+  <!-- ══ SUMMARY ══ -->
+  <div id="panel-summary" class="panel">
+    <div class="print-hdr"><h2>تقرير المرتب</h2><p id="print-range"></p></div>
+    <div class="filter-row">
+      <input type="month" id="s-month" onchange="renderSummary()" style="flex:1;">
+      <button class="btn btn-out" onclick="document.getElementById('s-month').value='';renderSummary()">كل الوقت</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box c"><div class="stat-num" id="st-shifts">0</div><div class="stat-lbl">شيفتات</div></div>
+      <div class="stat-box v"><div class="stat-num" id="st-hours">0</div><div class="stat-lbl">ساعات</div></div>
+      <div class="stat-box g"><div class="stat-num" id="st-cases">0</div><div class="stat-lbl">حالات</div></div>
+    </div>
+    <div class="vtoggle">
+      <button class="vtbtn on" id="vt-total" onclick="setView('total')">📊 الكلي</button>
+      <button class="vtbtn" id="vt-byplace" onclick="setView('byplace')">🏥 لكل مكان</button>
+    </div>
+    <!-- Total -->
+    <div id="view-total">
+      <div class="gtax-row">
+        <label>🧾 نسبة الضريبة</label>
+        <input type="number" id="tax-pct" value="0" min="0" max="100" onchange="renderSummary()">
+        <span>%</span>
+      </div>
+      <div class="salary-card">
+        <div class="big-num">
+          <div class="bn-lbl">صافي المرتب</div>
+          <div class="bn-val" id="net-salary">0</div>
+          <div class="bn-curr">جنيه مصري</div>
+        </div>
+        <div class="s-row"><span class="lbl">🏥 أجر أساسي</span><span class="val" id="sal-base">0 ج</span></div>
+        <div class="s-row"><span class="lbl">⚡ إضافي</span><span class="val" id="sal-extra">0 ج</span></div>
+        <div class="s-row stotal"><span class="lbl">📊 الإجمالي</span><span class="val" id="sal-gross">0 ج</span></div>
+        <div class="s-row stax"><span class="lbl">🧾 ضريبة (<span id="tax-pct-lbl">0</span>%)</span><span class="val" id="sal-tax">0 ج</span></div>
+        <div class="s-row snet"><span class="lbl">💰 الصافي</span><span class="val" id="sal-net">0 ج</span></div>
+      </div>
+    </div>
+    <!-- By place -->
+    <div id="view-byplace" style="display:none;">
+      <div id="byplace-list"></div>
+      <div class="salary-card">
+        <div class="s-row stotal"><span class="lbl">📊 الإجمالي الكلي</span><span class="val" id="bp-gross">0 ج</span></div>
+        <div class="s-row stax"><span class="lbl">🧾 مجموع الضرائب</span><span class="val" id="bp-tax">0 ج</span></div>
+        <div class="s-row snet"><span class="lbl">💰 الصافي الكلي</span><span class="val" id="bp-net">0 ج</span></div>
+      </div>
+    </div>
+    <button class="btn btn-pdf" onclick="printReport()" style="margin-top:6px;">🖨️ طباعة / PDF</button>
+    <div style="height:10px;"></div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- Bottom Nav -->
+<nav class="bnav">
+  <button class="bnav-btn on" onclick="tab('places')"><span class="ico">🏥</span>الأماكن</button>
+  <button class="bnav-btn" onclick="tab('log')"><span class="ico">➕</span>شيفت</button>
+  <button class="bnav-btn" onclick="tab('shifts')"><span class="ico">📋</span>السجل</button>
+  <button class="bnav-btn" onclick="tab('summary')"><span class="ico">💰</span>الملخص</button>
+</nav>
+
+<script>
+// ── DATA ──
+let places   = JSON.parse(localStorage.getItem('sj_places')||'[]');
+let shifts   = JSON.parse(localStorage.getItem('sj_shifts') ||'[]');
+let placeTax = JSON.parse(localStorage.getItem('sj_ptax')  ||'{}');
+function save(){
+  localStorage.setItem('sj_places',JSON.stringify(places));
+  localStorage.setItem('sj_shifts', JSON.stringify(shifts));
+  localStorage.setItem('sj_ptax',   JSON.stringify(placeTax));
+}
+const TYPE_LBL={hour:'بالساعة',shift:'بالشيفت',case:'بالحالة'};
+let summaryView='total';
+let deferredPrompt=null;
+
+// ── PWA Install ──
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('install-banner').classList.add('show');
+});
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('install-banner').classList.remove('show');
+  showToast('✅ تم تثبيت التطبيق!');
+});
+function installApp(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('install-banner').classList.remove('show');});}
+}
+
+// ── TABS ──
+function tab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+name).classList.add('on');
+  const idx=['places','log','shifts','summary'].indexOf(name);
+  document.querySelectorAll('.bnav-btn')[idx].classList.add('on');
+  if(name==='log'){populateSels();resetLog();}
+  if(name==='shifts'){populateSels();renderShifts();}
+  if(name==='summary'){renderSummary();}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── PLACES ──
+function addPlace(){
+  const name=document.getElementById('p-name').value.trim();
+  const type=document.getElementById('p-type').value;
+  const price=parseFloat(document.getElementById('p-price').value)||0;
+  if(!name){showToast('⚠️ أدخل اسم المكان');return;}
+  places.push({id:Date.now(),name,type,price});
+  save();
+  document.getElementById('p-name').value='';
+  document.getElementById('p-price').value='';
+  renderPlaces();
+  showToast('✅ تم إضافة '+name);
+}
+function deletePlace(id){
+  if(!confirm('هتحذف المكان ده؟'))return;
+  places=places.filter(p=>p.id!==id);shifts=shifts.filter(s=>s.placeId!==id);delete placeTax[id];
+  save();renderPlaces();
+}
+function renderPlaces(){
+  const el=document.getElementById('places-list');
+  const t=document.getElementById('places-sec-title');
+  if(!places.length){t.style.display='none';el.innerHTML='<div class="empty"><div class="ico">🏥</div><p>لم تضف أي أماكن بعد</p></div>';return;}
+  t.style.display='block';
+  el.innerHTML=places.map(p=>`
+    <div class="place-item">
+      <div class="pi-l">
+        <div class="pi-ico">🏥</div>
+        <div><div class="pi-name">${p.name}</div><div class="pi-meta">${TYPE_LBL[p.type]} • ${p.price.toLocaleString()} ج</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="pi-price">${p.price.toLocaleString()} ج</div>
+        <button class="btn btn-red" onclick="deletePlace(${p.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── LOG ──
+function populateSels(){
+  ['l-place','f-place'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const prev=sel.value,isF=id==='f-place';
+    sel.innerHTML=isF?'<option value="">كل الأماكن</option>':'<option value="">اختر...</option>';
+    places.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});
+    if(prev)sel.value=prev;
+  });
+}
+function resetLog(){
+  document.getElementById('l-place').value='';
+  document.getElementById('l-fields').style.display='none';
+  document.getElementById('l-no-place').style.display='block';
+  document.getElementById('l-preview').style.display='none';
+}
+function onPlaceChange(){
+  const pid=parseInt(document.getElementById('l-place').value);
+  const p=places.find(x=>x.id===pid);
+  if(!p){document.getElementById('l-fields').style.display='none';document.getElementById('l-no-place').style.display='block';return;}
+  document.getElementById('l-fields').style.display='block';
+  document.getElementById('l-no-place').style.display='none';
+  document.getElementById('l-pay-type').value=p.type;
+  document.getElementById('l-pay-price').value=p.price||'';
+  onPayTypeChange();
+}
+function onPayTypeChange(){
+  const t=document.getElementById('l-pay-type').value;
+  const lbl=document.getElementById('l-count-lbl');
+  if(t==='hour')lbl.textContent='عدد الساعات';
+  else if(t==='shift')lbl.textContent='عدد الشيفتات';
+  else lbl.textContent='عدد الحالات';
+}
+function gv(id){const el=document.getElementById(id);if(!el)return 0;return parseFloat(el.value)||0;}
+function updatePreview(){
+  const base=gv('l-pay-price')*gv('l-count');
+  const extra=gv('l-ex-hour-count')*gv('l-ex-hour-price')+gv('l-ex-case-count')*gv('l-ex-case-price')+gv('l-ex-tech-count')*gv('l-ex-tech-price');
+  const total=base+extra;
+  const pv=document.getElementById('l-preview');
+  if(total>0){pv.style.display='block';document.getElementById('l-preview-val').textContent=total.toLocaleString()+' ج';}
+  else pv.style.display='none';
+}
+function saveShift(){
+  const pid=parseInt(document.getElementById('l-place').value);
+  const p=places.find(x=>x.id===pid);
+  if(!p){showToast('⚠️ اختر مكان العمل');return;}
+  const dateVal=document.getElementById('l-date').value;
+  if(!dateVal){showToast('⚠️ اختر التاريخ');return;}
+  const payType=document.getElementById('l-pay-type').value;
+  const payPrice=gv('l-pay-price'),count=gv('l-count');
+  const exHC=gv('l-ex-hour-count'),exHP=gv('l-ex-hour-price');
+  const exCC=gv('l-ex-case-count'),exCP=gv('l-ex-case-price');
+  const exTC=gv('l-ex-tech-count'),exTP=gv('l-ex-tech-price');
+  const note=document.getElementById('l-note').value.trim();
+  const basePay=payPrice*count;
+  const extraPay=exHC*exHP+exCC*exCP+exTC*exTP;
+  const total=basePay+extraPay;
+  shifts.push({id:Date.now(),placeId:pid,placeName:p.name,date:dateVal,payType,payPrice,count,exHC,exHP,exCC,exCP,exTC,exTP,extraPay:exHC*exHP,extraCase:exCC*exCP,extraTech:exTC*exTP,extraPay:extraPay,basePay,total,note});
+  save();
+  ['l-pay-price','l-count','l-ex-hour-count','l-ex-hour-price','l-ex-case-count','l-ex-case-price','l-ex-tech-count','l-ex-tech-price','l-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('l-fields').style.display='none';
+  document.getElementById('l-no-place').style.display='block';
+  document.getElementById('l-preview').style.display='none';
+  document.getElementById('l-place').value='';
+  showToast('✅ تم الحفظ! الإجمالي: '+total.toLocaleString()+' ج');
+  tab('shifts');
+}
+
+// ── SHIFTS LIST ──
+function clearFilters(){document.getElementById('f-place').value='';document.getElementById('f-month').value='';renderShifts();}
+function getFiltered(){
+  let list=[...shifts];
+  const fp=document.getElementById('f-place')?.value,fm=document.getElementById('f-month')?.value;
+  if(fp)list=list.filter(s=>s.placeId==fp);
+  if(fm)list=list.filter(s=>s.date.startsWith(fm));
+  return list.sort((a,b)=>b.date.localeCompare(a.date));
+}
+function renderShifts(){
+  const el=document.getElementById('shifts-list');
+  const list=getFiltered();
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ico">📋</div><p>لا يوجد شيفتات</p></div>';return;}
+  const PT={hour:'ساعة',shift:'شيفت',case:'حالة'};
+  el.innerHTML=list.map(s=>{
+    const tags=[];
+    if(s.count)tags.push(`<span class="tag tc">⏱️ ${s.count} ${PT[s.payType]||''} × ${s.payPrice}ج</span>`);
+    if(s.exHC) tags.push(`<span class="tag tv">⚡ ${s.exHC} ساعة إضافية</span>`);
+    if(s.exCC) tags.push(`<span class="tag tg">🏥 ${s.exCC} حالة عادية</span>`);
+    if(s.exTC) tags.push(`<span class="tag to">🔬 ${s.exTC} تكنيك</span>`);
+    if(s.note) tags.push(`<span class="tag ty">💬 ${s.note}</span>`);
+    return `<div class="shift-item">
+      <div class="si-top">
+        <div><div class="si-place">🏥 ${s.placeName}</div><div class="si-date">📅 ${fmtDate(s.date)}</div></div>
+        <div style="text-align:left;"><div class="si-amount">${s.total.toLocaleString()} ج</div><button class="btn btn-red" style="margin-top:5px;" onclick="deleteShift(${s.id})">🗑️</button></div>
+      </div>
+      <div class="si-tags">${tags.join('')}</div>
+    </div>`;
+  }).join('');
+}
+function deleteShift(id){if(!confirm('هتحذف الشيفت ده؟'))return;shifts=shifts.filter(s=>s.id!==id);save();renderShifts();}
+
+// ── SUMMARY ──
+function setView(v){
+  summaryView=v;
+  document.getElementById('vt-total').classList.toggle('on',v==='total');
+  document.getElementById('vt-byplace').classList.toggle('on',v==='byplace');
+  document.getElementById('view-total').style.display=v==='total'?'block':'none';
+  document.getElementById('view-byplace').style.display=v==='byplace'?'block':'none';
+  renderSummary();
+}
+function renderSummary(){
+  const sm=document.getElementById('s-month').value;
+  let list=[...shifts];
+  if(sm)list=list.filter(s=>s.date.startsWith(sm));
+  document.getElementById('st-shifts').textContent=list.length;
+  document.getElementById('st-hours').textContent=list.reduce((a,s)=>a+(s.payType==='hour'?s.count:0),0);
+  document.getElementById('st-cases').textContent=list.reduce((a,s)=>a+(s.payType==='case'?s.count:0)+(s.exCC||0)+(s.exTC||0),0);
+  const basePay=list.reduce((a,s)=>a+s.basePay,0);
+  const extraPay=list.reduce((a,s)=>a+s.extraPay,0);
+  const gross=basePay+extraPay;
+  const taxPct=parseFloat(document.getElementById('tax-pct').value)||0;
+  const taxAmt=gross*taxPct/100;
+  const net=gross-taxAmt;
+  document.getElementById('sal-base').textContent=basePay.toLocaleString()+' ج';
+  document.getElementById('sal-extra').textContent=extraPay.toLocaleString()+' ج';
+  document.getElementById('sal-gross').textContent=gross.toLocaleString()+' ج';
+  document.getElementById('sal-tax').textContent='- '+taxAmt.toLocaleString()+' ج';
+  document.getElementById('sal-net').textContent=net.toLocaleString()+' ج';
+  document.getElementById('net-salary').textContent=net.toLocaleString();
+  document.getElementById('tax-pct-lbl').textContent=taxPct;
+
+  // by place
+  const byPlace={};
+  list.forEach(s=>{
+    const k=s.placeId+'';
+    if(!byPlace[k])byPlace[k]={name:s.placeName,placeId:s.placeId,base:0,extra:0,total:0,count:0};
+    byPlace[k].base+=s.basePay;byPlace[k].extra+=s.extraPay;byPlace[k].total+=s.total;byPlace[k].count++;
+  });
+  const bpl=document.getElementById('byplace-list');
+  if(!Object.keys(byPlace).length){bpl.innerHTML='<div class="empty" style="padding:30px;"><p>لا بيانات</p></div>';['bp-gross','bp-tax','bp-net'].forEach(id=>document.getElementById(id).textContent='0 ج');return;}
+  let bpG=0,bpT=0;
+  bpl.innerHTML=Object.entries(byPlace).map(([pid,d])=>{
+    const st=placeTax[pid]||0,ta=d.total*st/100,pn=d.total-ta;
+    bpG+=d.total;bpT+=ta;
+    return `<div class="pplace-card">
+      <div class="pplace-head"><div class="pplace-name">🏥 ${d.name} <span class="tag tc">${d.count} شيفت</span></div><div class="pplace-gross">${d.total.toLocaleString()} ج</div></div>
+      <div class="pplace-body">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px;">
+          <span class="tag tv">أساسي: ${d.base.toLocaleString()} ج</span>
+          <span class="tag to">إضافي: ${d.extra.toLocaleString()} ج</span>
+        </div>
+        <div class="tax-inline"><label>🧾 ضريبة ${d.name}</label><input type="number" id="ptax-${pid}" value="${st}" min="0" max="100" onchange="updatePlaceTax('${pid}')"><span>%</span></div>
+        <div class="pplace-result"><span class="rl">خصم: ${ta.toLocaleString()} ج</span><span class="rv" id="pnet-${pid}">${pn.toLocaleString()} ج</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('bp-gross').textContent=bpG.toLocaleString()+' ج';
+  document.getElementById('bp-tax').textContent='- '+bpT.toLocaleString()+' ج';
+  document.getElementById('bp-net').textContent=(bpG-bpT).toLocaleString()+' ج';
+}
+function updatePlaceTax(pid){
+  const val=parseFloat(document.getElementById('ptax-'+pid).value)||0;
+  placeTax[pid]=val;save();
+  const sm=document.getElementById('s-month').value;
+  let list=[...shifts];if(sm)list=list.filter(s=>s.date.startsWith(sm));
+  const byPlace={};
+  list.forEach(s=>{const k=s.placeId+'';if(!byPlace[k])byPlace[k]={total:0};byPlace[k].total+=s.total;});
+  let bpG=0,bpT=0;
+  Object.entries(byPlace).forEach(([k,d])=>{
+    const t=placeTax[k]||0,ta=d.total*t/100;bpG+=d.total;bpT+=ta;
+    const ne=document.getElementById('pnet-'+k);if(ne)ne.textContent=(d.total-ta).toLocaleString()+' ج';
+  });
+  document.getElementById('bp-gross').textContent=bpG.toLocaleString()+' ج';
+  document.getElementById('bp-tax').textContent='- '+bpT.toLocaleString()+' ج';
+  document.getElementById('bp-net').textContent=(bpG-bpT).toLocaleString()+' ج';
+}
+function printReport(){document.getElementById('print-range').textContent=document.getElementById('s-month').value||'كل الفترات';window.print();}
+
+// ── HELPERS ──
+function fmtDate(d){if(!d)return'';const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`;}
+function showToast(msg){
+  const t=document.createElement('div');t.textContent=msg;
+  t.style.cssText=`position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#7c3aed,#00e5ff);color:#fff;padding:12px 22px;border-radius:50px;font-family:Cairo,sans-serif;font-weight:700;font-size:.85rem;z-index:9999;box-shadow:0 6px 25px rgba(0,229,255,0.35);white-space:nowrap;max-width:90vw;text-align:center;`;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('l-date').value=new Date().toISOString().split('T')[0];
+  const now=new Date();
+  const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('s-month').value=ym;
+  document.getElementById('f-month').value=ym;
+  renderPlaces();populateSels();
+
+  // Register SW
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').then(()=>{
+      console.log('SW registered ✅');
+    }).catch(e=>console.log('SW error:',e));
+  }
+});
+</script>
+</body>
+</html>
