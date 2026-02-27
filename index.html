@@ -8,7 +8,20 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="شيفتاتي">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="data:application/json,{
+  &quot;name&quot;: &quot;سجل شيفتاتي&quot;,
+  &quot;short_name&quot;: &quot;شيفتاتي&quot;,
+  &quot;description&quot;: &quot;تتبع ساعات عملك وأرباحك&quot;,
+  &quot;start_url&quot;: &quot;.&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;background_color&quot;: &quot;#060b14&quot;,
+  &quot;theme_color&quot;: &quot;#00e5ff&quot;,
+  &quot;orientation&quot;: &quot;portrait&quot;,
+  &quot;icons&quot;: [
+    {&quot;src&quot;: &quot;https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/26a1.png&quot;, &quot;sizes&quot;: &quot;72x72&quot;, &quot;type&quot;: &quot;image/png&quot;},
+    {&quot;src&quot;: &quot;https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/26a1.png&quot;, &quot;sizes&quot;: &quot;192x192&quot;, &quot;type&quot;: &quot;image/png&quot;}
+  ]
+}">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>⚡ سجل شيفتاتي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -58,6 +71,8 @@
     color:var(--muted);font-family:'Cairo',sans-serif;font-size:.65rem;
     font-weight:700;cursor:pointer;transition:all .25s;
     display:flex;flex-direction:column;align-items:center;gap:3px;
+    text-decoration:none;-webkit-appearance:none;appearance:none;
+    outline:none;user-select:none;-webkit-user-select:none;
   }
   .bnav-btn .ico{font-size:1.3rem;transition:transform .25s;}
   .bnav-btn.on{color:var(--cyan);}
@@ -263,10 +278,16 @@
     </div>
   </div>
 
-  <!-- Install Banner -->
+  <!-- Install Banner Android -->
   <div class="install-banner" id="install-banner">
     <p>📲 ثبّت التطبيق على شاشتك الرئيسية للوصول السريع!</p>
     <button class="btn btn-glow" id="install-btn" onclick="installApp()">تثبيت التطبيق</button>
+  </div>
+  <!-- Install Banner iOS -->
+  <div class="install-banner" id="ios-banner" style="display:none;">
+    <p>📲 لتثبيت التطبيق على iPhone:</p>
+    <p style="font-size:.78rem;color:var(--muted);">اضغط على <strong style="color:var(--cyan);">زرار المشاركة</strong> ⬆️ ثم اختر <strong style="color:var(--cyan);">"إضافة إلى الشاشة الرئيسية"</strong></p>
+    <button class="btn btn-out" onclick="document.getElementById('ios-banner').style.display='none'">حسناً ✓</button>
   </div>
 
   <!-- ══ PLACES ══ -->
@@ -1017,6 +1038,12 @@ function showToast(msg){
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded',()=>{
+  // كشف iOS وعرض تعليمات التثبيت
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandalone = window.navigator.standalone === true;
+  if(isIOS && !isInStandalone){
+    document.getElementById('ios-banner').style.display='flex';
+  }
   document.getElementById('l-date').value=new Date().toISOString().split('T')[0];
   const now=new Date();
   const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -1031,10 +1058,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   checkActivation();
 
   // Register SW
+  // Service Worker inline - بدون ملف خارجي
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').then(()=>{
+    const swCode = `
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => self.clients.claim());
+      self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+    `;
+    const blob = new Blob([swCode], {type: 'application/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).then(()=>{
       console.log('SW registered ✅');
-    }).catch(e=>console.log('SW error:',e));
+    }).catch(e=>console.log('SW skipped'));
   }
 });
 </script>
