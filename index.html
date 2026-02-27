@@ -250,6 +250,19 @@
   .code-used{color:var(--red);font-size:.72rem;}
   .code-ok{color:var(--green);font-size:.72rem;}
 
+  /* Responsive */
+  @media (min-width:600px){
+    .wrap{max-width:480px;margin:0 auto;}
+    .bnav{max-width:480px;left:50%;transform:translateX(-50%);border-radius:20px 20px 0 0;}
+  }
+  @media (min-width:900px){
+    .wrap{max-width:520px;}
+    .bnav{max-width:520px;}
+  }
+  @media (max-width:360px){
+    .bnav-btn{font-size:.58rem;padding:10px 2px 8px;}
+    .field input,.field select{font-size:.88rem;padding:11px 12px;}
+  }
   @media print {
     body{background:#fff!important;color:#000!important;padding:0!important;}
     body::before,body::after{display:none!important;}
@@ -480,47 +493,54 @@
 </div><!-- /wrap -->
 
 <!-- EDIT SHIFT MODAL -->
-<div class="modal-overlay" id="edit-shift-modal">
-  <div class="modal-box" style="max-width:420px;">
-    <div class="modal-title">✏️ تعديل الشيفت</div>
+<div class="modal-overlay" id="edit-shift-modal" style="align-items:flex-end;padding:0;">
+  <div style="background:var(--s1);border-radius:24px 24px 0 0;padding:20px 18px 30px;width:100%;max-width:500px;margin:0 auto;border-top:1px solid rgba(0,229,255,0.2);max-height:90vh;display:flex;flex-direction:column;">
+    <!-- Header ثابت -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0;">
+      <div style="font-size:1rem;font-weight:800;color:var(--cyan);">✏️ تعديل الشيفت</div>
+      <button onclick="document.getElementById('edit-shift-modal').classList.remove('show')" style="background:rgba(255,255,255,0.08);border:none;color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer;">✕</button>
+    </div>
     <input type="hidden" id="es-id">
-    <div class="grid g2" style="margin-bottom:10px;">
-      <div class="field"><label>مكان العمل</label><select id="es-place"></select></div>
-      <div class="field"><label>التاريخ</label><input type="date" id="es-date"></div>
-    </div>
-    <div class="grid g2" style="margin-bottom:10px;">
-      <div class="field"><label>نوع الأجر</label>
-        <select id="es-pay-type">
-          <option value="hour">بالساعة</option>
-          <option value="shift">بالشيفت</option>
-          <option value="case">بالحالة</option>
-        </select>
+    <!-- محتوى قابل للتمرير -->
+    <div style="overflow-y:auto;flex:1;padding-bottom:8px;">
+      <div class="grid g2" style="margin-bottom:8px;">
+        <div class="field"><label>مكان العمل</label><select id="es-place"></select></div>
+        <div class="field"><label>التاريخ</label><input type="date" id="es-date"></div>
       </div>
-      <div class="field"><label>السعر</label><input type="number" id="es-pay-price" min="0"></div>
+      <div class="grid g2" style="margin-bottom:8px;">
+        <div class="field"><label>نوع الأجر</label>
+          <select id="es-pay-type">
+            <option value="hour">بالساعة</option>
+            <option value="shift">بالشيفت</option>
+            <option value="case">بالحالة</option>
+          </select>
+        </div>
+        <div class="field"><label>السعر</label><input type="number" id="es-pay-price" min="0"></div>
+      </div>
+      <div class="field" style="margin-bottom:8px;"><label>العدد</label><input type="number" id="es-count" min="0"></div>
+      <div class="grid g2" style="margin-bottom:6px;">
+        <div class="field"><label>ساعات إضافية</label><input type="number" id="es-exHC" min="0"></div>
+        <div class="field"><label>سعر الساعة الإضافية</label><input type="number" id="es-exHP" min="0"></div>
+      </div>
+      <div class="grid g2" style="margin-bottom:6px;">
+        <div class="field"><label>حالات عادية</label><input type="number" id="es-exCC" min="0"></div>
+        <div class="field"><label>سعر الحالة</label><input type="number" id="es-exCP" min="0"></div>
+      </div>
+      <div class="grid g2" style="margin-bottom:6px;">
+        <div class="field"><label>حالات تكنيك</label><input type="number" id="es-exTC" min="0"></div>
+        <div class="field"><label>سعر التكنيك</label><input type="number" id="es-exTP" min="0"></div>
+      </div>
+      <div class="grid g2" style="margin-bottom:6px;">
+        <div class="field"><label>حالات أخرى</label><input type="number" id="es-exOC" min="0"></div>
+        <div class="field"><label>سعر الحالة الأخرى</label><input type="number" id="es-exOP" min="0"></div>
+      </div>
+      <div class="field" style="margin-bottom:6px;"><label>ملاحظات</label><input type="text" id="es-note"></div>
     </div>
-    <div class="field" style="margin-bottom:10px;"><label>العدد</label><input type="number" id="es-count" min="0"></div>
-    <div class="grid g2" style="margin-bottom:6px;">
-      <div class="field"><label>ساعات إضافية</label><input type="number" id="es-exHC" min="0"></div>
-      <div class="field"><label>سعر الساعة الإضافية</label><input type="number" id="es-exHP" min="0"></div>
-    </div>
-    <div class="grid g2" style="margin-bottom:6px;">
-      <div class="field"><label>حالات عادية</label><input type="number" id="es-exCC" min="0"></div>
-      <div class="field"><label>سعر الحالة</label><input type="number" id="es-exCP" min="0"></div>
-    </div>
-    <div class="grid g2" style="margin-bottom:6px;">
-      <div class="field"><label>حالات تكنيك</label><input type="number" id="es-exTC" min="0"></div>
-      <div class="field"><label>سعر التكنيك</label><input type="number" id="es-exTP" min="0"></div>
-    </div>
-    <div class="grid g2" style="margin-bottom:10px;">
-      <div class="field"><label>حالات أخرى</label><input type="number" id="es-exOC" min="0"></div>
-      <div class="field"><label>سعر الحالة الأخرى</label><input type="number" id="es-exOP" min="0"></div>
-    </div>
-    <div class="field" style="margin-bottom:14px;"><label>ملاحظات</label><input type="text" id="es-note"></div>
-    <div class="grid g2">
-      <button class="btn btn-green" onclick="saveEditShift()" style="font-size:1rem;padding:16px;letter-spacing:1px;">
+    <!-- زرار الحفظ ثابت في الأسفل -->
+    <div style="flex-shrink:0;padding-top:12px;border-top:1px solid var(--border);">
+      <button class="btn btn-green" onclick="saveEditShift()" style="width:100%;padding:16px;font-size:1rem;font-weight:900;letter-spacing:1px;border-radius:14px;">
         ✅ حفظ التعديل
       </button>
-      <button class="btn btn-out" onclick="document.getElementById('edit-shift-modal').classList.remove('show')">❌ إلغاء</button>
     </div>
   </div>
 </div>
@@ -864,7 +884,16 @@ function installApp(){
 function handleInstall(type){
   if(type==='android' || type==='desktop'){
     if(deferredPrompt){
-      installApp();
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((result)=>{
+        deferredPrompt = null;
+        if(result.outcome === 'accepted'){
+          // اخفي الأزرار بعد القبول
+          const row = document.getElementById('install-row');
+          if(row) row.style.display = 'none';
+          showToast('🎉 تم التثبيت بنجاح!');
+        }
+      });
     } else {
       showToast('📲 افتح التطبيق في Chrome وانتظر زرار التثبيت');
     }
@@ -1249,13 +1278,19 @@ function showToast(msg){
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded',()=>{
-  // كشف iOS وعرض تعليمات التثبيت
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isInStandalone = window.navigator.standalone === true;
-  if(isIOS && !isInStandalone){
-    document.getElementById('install-row').style.display='flex';
-    document.getElementById('install-ios-btn').style.display='block';
+  // اخفي أزرار التثبيت بس لو التطبيق متثبت فعلاً
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  if(isStandalone){
+    const row = document.getElementById('install-row');
+    if(row) row.style.display = 'none';
   }
+  // بعد التثبيت اخفي الأزرار
+  window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+    if(e.matches){
+      const row = document.getElementById('install-row');
+      if(row) row.style.display = 'none';
+    }
+  });
   document.getElementById('l-date').value=new Date().toISOString().split('T')[0];
   const now=new Date();
   const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
