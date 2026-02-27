@@ -296,15 +296,15 @@
   </div>
 
   <!-- Install Buttons — ثابتة دايماً -->
-  <div id="install-row" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-    <button id="install-android-btn" onclick="handleInstall('android')" style="flex:1;min-width:140px;background:linear-gradient(135deg,#1a73e8,#00e5ff);border:none;color:#fff;padding:13px 16px;border-radius:14px;font-family:Cairo,sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-      <span style="font-size:1.2rem;">🤖</span> تثبيت أندرويد
+  <div id="install-row" style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+    <button id="install-android-btn" onclick="handleInstall('android')" style="flex:1;min-width:80px;background:linear-gradient(135deg,#1a73e8,#00e5ff);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+      🤖 أندرويد
     </button>
-    <button id="install-ios-btn" onclick="showIosInstructions()" style="flex:1;min-width:140px;background:linear-gradient(135deg,#1c1c1e,#3a3a3c);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:13px 16px;border-radius:14px;font-family:Cairo,sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-      <span style="font-size:1.2rem;"></span> تثبيت iPhone
+    <button id="install-ios-btn" onclick="showIosInstructions()" style="flex:1;min-width:80px;background:linear-gradient(135deg,#1c1c1e,#3a3a3c);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+       iPhone
     </button>
-    <button id="install-desktop-btn" onclick="handleInstall('desktop')" style="flex:1;min-width:140px;background:linear-gradient(135deg,#7c3aed,#00e5ff);border:none;color:#fff;padding:13px 16px;border-radius:14px;font-family:Cairo,sans-serif;font-weight:800;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-      <span style="font-size:1.2rem;">💻</span> تثبيت كمبيوتر
+    <button id="install-desktop-btn" onclick="handleInstall('desktop')" style="flex:1;min-width:80px;background:linear-gradient(135deg,#7c3aed,#00e5ff);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+      💻 كمبيوتر
     </button>
   </div>
   <!-- iOS Instructions -->
@@ -414,20 +414,27 @@
   <!-- ══ SUMMARY ══ -->
   <div id="panel-summary" class="panel">
     <div class="print-hdr"><h2>تقرير المرتب</h2><p id="print-range"></p></div>
-    <div class="filter-row" style="flex-wrap:wrap;gap:8px;">
-      <div style="display:flex;gap:6px;flex:1;min-width:200px;">
-        <div class="field" style="flex:1;">
-          <label style="font-size:.65rem;color:var(--muted);font-weight:700;">من تاريخ</label>
-          <input type="date" id="s-date-from" onchange="renderSummary()" style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:12px;">
+      <!-- صف 1: من تاريخ / لتاريخ -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;">📅 من تاريخ</div>
+          <input type="date" id="s-date-from" onchange="renderSummary()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.78rem;outline:none;width:100%;box-sizing:border-box;">
         </div>
-        <div class="field" style="flex:1;">
-          <label style="font-size:.65rem;color:var(--muted);font-weight:700;">لتاريخ</label>
-          <input type="date" id="s-date-to" onchange="renderSummary()" style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
+        <div>
+          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;">📅 لتاريخ</div>
+          <input type="date" id="s-date-to" onchange="renderSummary()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.78rem;outline:none;width:100%;box-sizing:border-box;">
         </div>
       </div>
-      <div style="display:flex;gap:6px;align-items:flex-end;">
-        <input type="month" id="s-month" onchange="onMonthChange()" style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;">
-        <button class="btn btn-out" onclick="clearSummaryFilter()">كل الوقت</button>
+      <!-- صف 2: شهر محدد + كل الوقت -->
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;">
+        <div>
+          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;">🗓️ أو اختر شهر</div>
+          <input type="month" id="s-month" onchange="onMonthChange()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.78rem;outline:none;width:100%;box-sizing:border-box;">
+        </div>
+        <div style="padding-top:18px;">
+          <button class="btn btn-out" onclick="clearSummaryFilter()" style="white-space:nowrap;padding:8px 12px;font-size:.78rem;">كل الوقت</button>
+        </div>
       </div>
     </div>
     <div class="stat-grid">
