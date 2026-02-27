@@ -361,9 +361,21 @@
   <!-- ══ SUMMARY ══ -->
   <div id="panel-summary" class="panel">
     <div class="print-hdr"><h2>تقرير المرتب</h2><p id="print-range"></p></div>
-    <div class="filter-row">
-      <input type="month" id="s-month" onchange="renderSummary()" style="flex:1;">
-      <button class="btn btn-out" onclick="document.getElementById('s-month').value='';renderSummary()">كل الوقت</button>
+    <div class="filter-row" style="flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;gap:6px;flex:1;min-width:200px;">
+        <div class="field" style="flex:1;">
+          <label style="font-size:.65rem;color:var(--muted);font-weight:700;">من تاريخ</label>
+          <input type="date" id="s-date-from" onchange="renderSummary()" style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
+        </div>
+        <div class="field" style="flex:1;">
+          <label style="font-size:.65rem;color:var(--muted);font-weight:700;">لتاريخ</label>
+          <input type="date" id="s-date-to" onchange="renderSummary()" style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:flex-end;">
+        <input type="month" id="s-month" onchange="onMonthChange()" style="background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;">
+        <button class="btn btn-out" onclick="clearSummaryFilter()">كل الوقت</button>
+      </div>
     </div>
     <div class="stat-grid">
       <div class="stat-box c"><div class="stat-num" id="st-shifts">0</div><div class="stat-lbl">شيفتات</div></div>
@@ -482,10 +494,10 @@
 
 <!-- Bottom Nav -->
 <nav class="bnav">
-  <button class="bnav-btn on" onclick="tab('places')"><span class="ico">🏥</span>الأماكن</button>
-  <button class="bnav-btn" onclick="tab('log')"><span class="ico">➕</span>شيفت</button>
-  <button class="bnav-btn" onclick="tab('shifts')"><span class="ico">📋</span>السجل</button>
-  <button class="bnav-btn" onclick="tab('summary')"><span class="ico">💰</span>الملخص</button>
+  <button class="bnav-btn on" type="button" onclick="event.preventDefault();event.stopPropagation();tab('places');return false;"><span class="ico">🏥</span>الأماكن</button>
+  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('log');return false;"><span class="ico">➕</span>شيفت</button>
+  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('shifts');return false;"><span class="ico">📋</span>السجل</button>
+  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('summary');return false;"><span class="ico">💰</span>الملخص</button>
 </nav>
 
 <script>
@@ -738,15 +750,20 @@ function installApp(){
 
 // ── TABS ──
 function tab(name){
+  // منع أي سلوك افتراضي
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
-  document.getElementById('panel-'+name).classList.add('on');
+  const panel = document.getElementById('panel-'+name);
+  if(!panel) return;
+  panel.classList.add('on');
   const idx=['places','log','shifts','summary'].indexOf(name);
-  document.querySelectorAll('.bnav-btn')[idx].classList.add('on');
+  if(idx>-1) document.querySelectorAll('.bnav-btn')[idx].classList.add('on');
   if(name==='log'){populateSels();resetLog();}
   if(name==='shifts'){populateSels();renderShifts();}
   if(name==='summary'){renderSummary();}
   window.scrollTo({top:0,behavior:'smooth'});
+  // منع scroll للأعلى في URL
+  if(history.pushState) history.pushState(null, null, window.location.pathname);
 }
 
 // ── PLACES ──
@@ -901,10 +918,31 @@ function setView(v){
   document.getElementById('view-byplace').style.display=v==='byplace'?'block':'none';
   renderSummary();
 }
+function onMonthChange(){
+  // لما يختار شهر يمسح من/لتاريخ
+  document.getElementById('s-date-from').value='';
+  document.getElementById('s-date-to').value='';
+  renderSummary();
+}
+function clearSummaryFilter(){
+  document.getElementById('s-month').value='';
+  document.getElementById('s-date-from').value='';
+  document.getElementById('s-date-to').value='';
+  renderSummary();
+}
 function renderSummary(){
   const sm=document.getElementById('s-month').value;
+  const sf=document.getElementById('s-date-from').value;
+  const st=document.getElementById('s-date-to').value;
   let list=[...shifts];
-  if(sm)list=list.filter(s=>s.date.startsWith(sm));
+  if(sm) list=list.filter(s=>s.date.startsWith(sm));
+  else if(sf||st){
+    list=list.filter(s=>{
+      if(sf && s.date < sf) return false;
+      if(st && s.date > st) return false;
+      return true;
+    });
+  }
   document.getElementById('st-shifts').textContent=list.length;
   document.getElementById('st-hours').textContent=list.reduce((a,s)=>a+(s.payType==='hour'?s.count:0),0);
   document.getElementById('st-cases').textContent=list.reduce((a,s)=>a+(s.payType==='case'?s.count:0)+(s.exCC||0)+(s.exTC||0)+(s.exOC||0),0);
