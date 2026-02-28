@@ -760,10 +760,18 @@ function showUpgrade(){
 
 function useFree(){
   isFreeMode = true;
+  isActivated = false;
   localStorage.setItem('sj_freemode','true');
-  document.getElementById('act-overlay').style.display='none';
+  localStorage.removeItem('sj_activated');
+  // إخفاء الأوفرلاي نهائياً
+  const overlay = document.getElementById('act-overlay');
+  overlay.style.display='none';
+  overlay.style.visibility='hidden';
+  // إظهار بانر الترقية
   document.getElementById('upgrade-banner').style.display='block';
-  showToast('✅ النسخة المجانية — مكان واحد + تسجيل شيفتات');
+  // تحديث الواجهة
+  showToast('✅ النسخة المجانية — مكان واحد + شيفتات غير محدودة');
+  tab('places');
 }
 
 async function tryActivate(){
@@ -815,7 +823,7 @@ function headerTap(){
   headerTaps++;
   if(headerTimer) clearTimeout(headerTimer);
   headerTimer = setTimeout(()=>{ headerTaps=0; }, 2000);
-  if(headerTaps >= 5){
+  if(headerTaps >= 10){
     headerTaps=0;
     const pass = prompt('🔐 أدخل باسورد لوحة التحكم:');
     if(pass === ADMIN_PASS){ openAdmin(); }
@@ -1584,16 +1592,25 @@ document.addEventListener('DOMContentLoaded',()=>{
         const newSW = reg.installing;
         newSW.addEventListener('statechange', () => {
           if(newSW.state === 'installed' && navigator.serviceWorker.controller){
-            // يحدث الصفحة تلقائياً
-            window.location.reload();
+            // تحديث تلقائي بس لو المستخدم مش مشترك
+            const activated = localStorage.getItem('sj_activated') === 'true';
+            const freeMode  = localStorage.getItem('sj_freemode') === 'true';
+            if(!activated && !freeMode){
+              window.location.reload();
+            } else {
+              // إشعار هادئ بدل الـ reload
+              console.log('تحديث جاهز — سيُطبق عند إعادة الفتح');
+            }
           }
         });
       });
     }).catch(e => console.log('SW skipped'));
     
-    // تحديث تلقائي لما الصفحة تتفتح
+    // تحديث تلقائي بس لو مش مشترك
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
+      const activated = localStorage.getItem('sj_activated') === 'true';
+      const freeMode  = localStorage.getItem('sj_freemode') === 'true';
+      if(!activated && !freeMode) window.location.reload();
     });
   }
 });
