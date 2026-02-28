@@ -1549,7 +1549,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Register SW
   // Service Worker — تحديث تلقائي فور رفع نسخة جديدة
   if('serviceWorker' in navigator){
-    const CACHE_VERSION = 'v' + new Date().toISOString().slice(0,10);
+    const CACHE_VERSION = 'v20260228200254';
     const swCode = `
       const CACHE = '${CACHE_VERSION}';
       const OFFLINE_ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
@@ -1568,18 +1568,23 @@ document.addEventListener('DOMContentLoaded',()=>{
         );
       });
       self.addEventListener('fetch', e => {
-        // Cache-first: يشتغل offline، يتحدث لما في نت
         if(e.request.method !== 'GET') return;
+        // للـ HTML: network-first عشان التحديثات توصل فوراً
+        // للباقي: cache-first عشان الـ offline يشتغل
+        const isHTML = e.request.headers.get('accept')?.includes('text/html');
         e.respondWith(
-          caches.match(e.request).then(cached => {
-            const netFetch = fetch(e.request).then(res => {
-              if(res && res.status === 200){
-                caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-              }
-              return res;
-            }).catch(()=> cached);
-            return cached || netFetch;
-          })
+          isHTML
+            ? fetch(e.request).then(res => {
+                if(res && res.status === 200) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+                return res;
+              }).catch(() => caches.match(e.request))
+            : caches.match(e.request).then(cached => {
+                const net = fetch(e.request).then(res => {
+                  if(res && res.status === 200) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+                  return res;
+                }).catch(() => cached);
+                return cached || net;
+              })
         );
       });
     `.replace('\${CACHE_VERSION}', CACHE_VERSION);
