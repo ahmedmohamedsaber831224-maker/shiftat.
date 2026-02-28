@@ -206,8 +206,8 @@
   .modal-title{font-size:1rem;font-weight:800;color:var(--cyan);margin-bottom:18px;text-align:center;}
 
   /* ── ACTIVATION OVERLAY ── */
-  .act-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
-  .act-box{background:var(--s1);border:1px solid rgba(0,229,255,0.2);border-radius:24px;padding:32px 24px;max-width:360px;width:100%;text-align:center;}
+  .act-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.97);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+  .act-box{background:var(--s1);border:1px solid rgba(0,229,255,0.2);border-radius:24px 24px 0 0;padding:24px 20px 36px;max-width:480px;width:100%;text-align:center;}
   .act-icon{font-size:3rem;margin-bottom:14px;}
   .act-title{font-size:1.3rem;font-weight:900;color:var(--cyan);margin-bottom:6px;}
   .act-sub{font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.6;}
@@ -586,8 +586,13 @@
       <div style="font-size:.75rem;color:var(--muted);margin-top:10px;text-align:center;">بعد الدفع هتاخد كود تفعيل على واتساب</div>
     </div>
 
-    <input class="act-input" id="act-code-input" placeholder="أدخل كود التفعيل هنا" maxlength="20">
-    <button class="act-activate-btn" onclick="tryActivate()">🔓 تفعيل النسخة الكاملة</button>
+    <input class="act-input" id="act-code-input" placeholder="أدخل كود التفعيل هنا" maxlength="20" 
+      style="margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();tryActivate();}">
+    <button class="act-activate-btn" type="button" onclick="tryActivate()" 
+      style="position:sticky;bottom:0;z-index:10;">
+      🔓 تفعيل النسخة الكاملة
+    </button>
     <div class="act-err" id="act-err">❌ كود غير صحيح أو مستخدم من قبل</div>
   </div>
 </div>
