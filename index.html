@@ -301,10 +301,10 @@
     <div id="upgrade-banner" style="display:none;margin-top:12px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
         <a href="https://wa.me/201116631624?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B4%D8%AA%D8%B1%D9%8A%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%D8%A9%20%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84%D8%A9%20%D9%85%D9%86%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B3%D8%AC%D9%84%20%D8%B4%D9%8A%D9%81%D8%AA%D8%A7%D8%AA%D9%8A%20%F0%9F%92%B0" target="_blank" style="background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:10px 18px;border-radius:25px;font-family:Cairo,sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 15px rgba(37,211,102,0.4);">
-          💬 تواصل على واتساب للترقية
+          <span id="wa-btn-lbl">💬 تواصل على واتساب للترقية</span>
         </a>
         <button onclick="showUpgrade()" style="background:linear-gradient(135deg,#ff6d00,#ffd600);color:#000;border:none;padding:10px 18px;border-radius:25px;font-family:Cairo,sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;box-shadow:0 4px 15px rgba(255,109,0,0.4);">
-          🔑 عندي كود تفعيل
+          <span id="code-btn-lbl">🔑 عندي كود تفعيل</span>
         </button>
       </div>
     </div>
@@ -322,7 +322,7 @@
       💻 كمبيوتر
     </button>
     <button onclick="shareApp()" style="flex:1;min-width:70px;background:linear-gradient(135deg,#00897b,#00e676);border:none;color:#fff;padding:7px 8px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:800;font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
-      🔗 مشاركة
+      <span id="share-btn-lbl">🔗 مشاركة</span>
     </button>
   </div>
   <!-- iOS Instructions -->
@@ -343,59 +343,63 @@
   <!-- ══ PLACES ══ -->
   <div id="panel-places" class="panel on">
     <div class="card">
-      <div class="ch"><span class="ct">🏥 إضافة مكان عمل جديد</span></div>
+      <div class="ch"><span class="ct" id="add-place-title">🏥 إضافة مكان عمل جديد</span></div>
       <div class="grid">
-        <div class="field"><label>اسم المكان</label><input type="text" id="p-name" placeholder="مثال: مستشفى النور"></div>
+        <div class="field"><label id="lbl-place-name">اسم المكان</label><input type="text" id="p-name" placeholder="مثال: مستشفى النور"></div>
         <div class="grid g2">
           <div class="field">
-            <label>نوع الأجر</label>
-            <select id="p-type"><option value="hour">بالساعة</option><option value="shift">بالشيفت</option><option value="case">بالحالة</option></select>
+            <label id="lbl-pay-type">نوع الأجر</label>
+            <select id="p-type">
+              <option value="hour" id="opt-hour-p">بالساعة</option>
+              <option value="shift" id="opt-shift-p">بالشيفت</option>
+              <option value="case" id="opt-case-p">بالحالة</option>
+            </select>
           </div>
-          <div class="field"><label>السعر (جنيه)</label><input type="number" id="p-price" placeholder="0" min="0"></div>
+          <div class="field"><label id="lbl-price">السعر (جنيه)</label><input type="number" id="p-price" placeholder="0" min="0"></div>
         </div>
       </div>
-      <div style="margin-top:14px;"><button class="btn btn-glow" onclick="addPlace()">🏥 إضافة المكان</button></div>
+      <div style="margin-top:14px;"><button class="btn btn-glow" onclick="addPlace()" id="add-place-btn-lbl">🏥 إضافة المكان</button></div>
     </div>
     <div class="sec-title" id="places-sec-title" style="display:none">أماكن العمل المسجلة</div>
-    <div id="places-list"><div class="empty"><div class="ico">🏥</div><p>لم تضف أي أماكن بعد</p></div></div>
+    <div id="places-list"><div class="empty"><div class="ico">🏥</div><p id="no-places-lbl">لم تضف أي أماكن بعد</p></div></div>
   </div>
 
   <!-- ══ LOG ══ -->
   <div id="panel-log" class="panel">
     <div class="card">
-      <div class="ch"><span class="ct">➕ شيفت جديد</span></div>
+      <div class="ch"><span class="ct" id="shift-form-title">➕ شيفت جديد</span></div>
       <div class="grid g2">
         <div class="field">
-          <label>مكان العمل</label>
-          <select id="l-place" onchange="onPlaceChange()"><option value="">اختر...</option></select>
+          <label id="lbl-workplace">مكان العمل</label>
+          <select id="l-place" onchange="onPlaceChange()"><option value="" id="lbl-select-place">اختر...</option></select>
         </div>
-        <div class="field"><label>التاريخ</label><input type="date" id="l-date"></div>
+        <div class="field"><label id="lbl-date">التاريخ</label><input type="date" id="l-date"></div>
       </div>
-      <div id="l-no-place" style="color:var(--muted);font-size:.85rem;text-align:center;padding:22px 0;">⬆️ اختر مكان عمل أولاً</div>
+      <div id="l-no-place" style="color:var(--muted);font-size:.85rem;text-align:center;padding:22px 0;" id="lbl-choose-first">⬆️ اختر مكان عمل أولاً</div>
       <div id="l-fields" style="display:none;">
         <div class="div"></div>
-        <div class="sec-title">نوع الأجر والسعر</div>
+        <div class="sec-title" id="lbl-pay-type-section">نوع الأجر والسعر</div>
         <div class="grid g3" style="margin-bottom:12px;">
           <div class="field">
-            <label>نوع الأجر</label>
+            <label id="lbl-pay-per">نوع الأجر</label>
             <select id="l-pay-type" onchange="onPayTypeChange()">
-              <option value="hour">ساعة</option>
-              <option value="shift">شيفت</option>
-              <option value="case">حالة</option>
+              <option value="hour" id="opt-hour-l">ساعة</option>
+              <option value="shift" id="opt-shift-l">شيفت</option>
+              <option value="case" id="opt-case-l">حالة</option>
             </select>
           </div>
-          <div class="field"><label>السعر</label><input type="number" id="l-pay-price" placeholder="0" min="0" oninput="updatePreview()"></div>
+          <div class="field"><label id="lbl-pay-price">السعر</label><input type="number" id="l-pay-price" placeholder="0" min="0" oninput="updatePreview()"></div>
           <div class="field"><label id="l-count-lbl">العدد</label><input type="number" id="l-count" placeholder="0" min="0" oninput="updatePreview()"></div>
         </div>
         <div class="extra-box">
           <div class="extra-head" id="extra-head-lbl">⚡ الإضافي</div>
           <!-- صف الساعات الإضافية -->
           <div style="display:grid;grid-template-columns:1fr 80px 80px;gap:6px;align-items:end;margin-bottom:6px;">
-            <div><div style="font-size:.6rem;color:var(--muted);margin-bottom:3px;">التسمية</div>
+            <div><div style="font-size:.6rem;color:var(--muted);margin-bottom:3px;" id="lbl-ex-label">التسمية</div>
               <input type="text" id="l-ex-hour-name" value="ساعات إضافية" style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.75rem;outline:none;width:100%;box-sizing:border-box;"></div>
-            <div><div style="font-size:.6rem;color:var(--muted);margin-bottom:3px;">العدد</div>
+            <div><div style="font-size:.6rem;color:var(--muted);margin-bottom:3px;" id="lbl-ex-count">العدد</div>
               <input type="number" id="l-ex-hour-count" placeholder="0" min="0" oninput="updatePreview()" style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;box-sizing:border-box;text-align:center;"></div>
-            <div><div style="font-size:.6rem;color:var(--muted);margin-bottom:3px;">السعر</div>
+            <div><div style="font-size:.6rem;color:var(--muted);margin-bottom:3px;" id="lbl-ex-price">السعر</div>
               <input type="number" id="l-ex-hour-price" placeholder="0" min="0" oninput="updatePreview()" style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;box-sizing:border-box;text-align:center;"></div>
           </div>
           <!-- صف حالات عادية -->
@@ -419,19 +423,19 @@
           <!-- صفوف إضافية ديناميكية -->
           <div id="extra-custom-rows"></div>
           <!-- زرار إضافة صف جديد -->
-          <button type="button" onclick="addExtraRow()" style="width:100%;background:rgba(0,229,255,0.08);border:1px dashed var(--cyan);color:var(--cyan);padding:7px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;margin-top:4px;">
+          <button type="button" onclick="addExtraRow()" id="add-extra-lbl" style="width:100%;background:rgba(0,229,255,0.08);border:1px dashed var(--cyan);color:var(--cyan);padding:7px;border-radius:10px;font-family:Cairo,sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;margin-top:4px;">
             ➕ إضافة عنصر إضافي
           </button>
         </div>
         <div class="field" style="margin-top:12px;">
-          <label>ملاحظات</label>
+          <label id="lbl-notes">ملاحظات</label>
           <input type="text" id="l-note" placeholder="أي ملاحظة...">
         </div>
         <div class="preview-box" id="l-preview">
-          <div class="preview-lbl">الإجمالي المتوقع</div>
+          <div class="preview-lbl" id="lbl-preview">الإجمالي المتوقع</div>
           <div class="preview-val" id="l-preview-val">0 ج</div>
         </div>
-        <div style="margin-top:14px;"><button class="btn btn-green" onclick="saveShift()">💾 حفظ الشيفت</button></div>
+        <div style="margin-top:14px;"><button class="btn btn-green" onclick="saveShift()" id="save-shift-lbl">💾 حفظ الشيفت</button></div>
       </div>
     </div>
   </div>
@@ -448,84 +452,81 @@
 
   <!-- ══ SUMMARY ══ -->
   <div id="panel-summary" class="panel">
-    <div class="print-hdr"><h2>تقرير المرتب</h2><p id="print-range"></p></div>
+    <div class="print-hdr"><h2 id="lbl-report-title">تقرير المرتب</h2><p id="print-range"></p></div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:12px;">
-      <!-- صف 1: من تاريخ / لتاريخ -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
         <div>
-          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;">📅 من تاريخ</div>
+          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;" id="lbl-from-date">📅 من تاريخ</div>
           <input type="date" id="s-date-from" onchange="renderSummary()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.78rem;outline:none;width:100%;box-sizing:border-box;">
         </div>
         <div>
-          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;">📅 لتاريخ</div>
+          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;" id="lbl-to-date">📅 لتاريخ</div>
           <input type="date" id="s-date-to" onchange="renderSummary()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.78rem;outline:none;width:100%;box-sizing:border-box;">
         </div>
       </div>
-      <!-- صف 2: شهر محدد + كل الوقت -->
       <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;">
         <div>
-          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;">🗓️ أو اختر شهر</div>
+          <div style="font-size:.62rem;color:var(--muted);font-weight:700;margin-bottom:4px;" id="lbl-or-month">🗓️ أو اختر شهر</div>
           <input type="month" id="s-month" onchange="onMonthChange()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.78rem;outline:none;width:100%;box-sizing:border-box;">
         </div>
         <div style="padding-top:18px;">
-          <button class="btn btn-out" onclick="clearSummaryFilter()" style="white-space:nowrap;padding:8px 12px;font-size:.78rem;">كل الوقت</button>
+          <button class="btn btn-out" onclick="clearSummaryFilter()" id="all-time-lbl" style="white-space:nowrap;padding:8px 12px;font-size:.78rem;">كل الوقت</button>
         </div>
       </div>
     </div>
     <div class="stat-grid">
-      <div class="stat-box c"><div class="stat-num" id="st-shifts">0</div><div class="stat-lbl">شيفتات</div></div>
-      <div class="stat-box v"><div class="stat-num" id="st-hours">0</div><div class="stat-lbl">ساعات</div></div>
-      <div class="stat-box g"><div class="stat-num" id="st-cases">0</div><div class="stat-lbl">حالات</div></div>
+      <div class="stat-box c"><div class="stat-num" id="st-shifts">0</div><div class="stat-lbl" id="lbl-st-shifts">شيفتات</div></div>
+      <div class="stat-box v"><div class="stat-num" id="st-hours">0</div><div class="stat-lbl" id="lbl-st-hours">ساعات</div></div>
+      <div class="stat-box g"><div class="stat-num" id="st-cases">0</div><div class="stat-lbl" id="lbl-st-cases">حالات</div></div>
     </div>
     <div class="vtoggle">
-      <button class="vtbtn on" id="vt-total" onclick="setView('total')">📊 الكلي</button>
-      <button class="vtbtn" id="vt-byplace" onclick="setView('byplace')">🏥 لكل مكان</button>
+      <button class="vtbtn on" id="vt-total" onclick="setView('total')">📊 <span id="lbl-vt-total">الكلي</span></button>
+      <button class="vtbtn" id="vt-byplace" onclick="setView('byplace')">🏥 <span id="lbl-vt-byplace">لكل مكان</span></button>
     </div>
     <!-- Total -->
     <div id="view-total">
       <div class="gtax-row">
-        <label>🧾 نسبة الضريبة</label>
+        <label id="lbl-tax-pct">🧾 نسبة الضريبة</label>
         <input type="number" id="tax-pct" value="0" min="0" max="100" onchange="renderSummary()">
         <span>%</span>
       </div>
       <div class="salary-card">
         <div class="big-num">
-          <div class="bn-lbl">صافي المرتب</div>
+          <div class="bn-lbl" id="lbl-net-salary">صافي المرتب</div>
           <div class="bn-val" id="net-salary">0</div>
-          <div class="bn-curr">جنيه مصري</div>
+          <div class="bn-curr" id="lbl-currency">جنيه مصري</div>
         </div>
-        <div class="s-row"><span class="lbl">🏥 أجر أساسي</span><span class="val" id="sal-base">0 ج</span></div>
-        <div class="s-row"><span class="lbl">⚡ إضافي</span><span class="val" id="sal-extra">0 ج</span></div>
-        <div class="s-row stotal"><span class="lbl">📊 الإجمالي</span><span class="val" id="sal-gross">0 ج</span></div>
-        <div class="s-row stax"><span class="lbl">🧾 ضريبة (<span id="tax-pct-lbl">0</span>%)</span><span class="val" id="sal-tax">0 ج</span></div>
-        <div class="s-row snet"><span class="lbl">💰 الصافي</span><span class="val" id="sal-net">0 ج</span></div>
+        <div class="s-row"><span class="lbl" id="lbl-base-pay">🏥 أجر أساسي</span><span class="val" id="sal-base">0 ج</span></div>
+        <div class="s-row"><span class="lbl" id="lbl-extra-pay">⚡ إضافي</span><span class="val" id="sal-extra">0 ج</span></div>
+        <div class="s-row stotal"><span class="lbl" id="lbl-gross">📊 الإجمالي</span><span class="val" id="sal-gross">0 ج</span></div>
+        <div class="s-row stax"><span class="lbl" id="lbl-tax-row">🧾 ضريبة (<span id="tax-pct-lbl">0</span>%)</span><span class="val" id="sal-tax">0 ج</span></div>
+        <div class="s-row snet"><span class="lbl" id="lbl-net-row">💰 الصافي</span><span class="val" id="sal-net">0 ج</span></div>
       </div>
     </div>
     <!-- By place -->
     <div id="view-byplace" style="display:none;">
-      <!-- فلتر التاريخ لكل مكان -->
       <div style="background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
-        <div style="font-size:.72rem;color:var(--cyan);font-weight:800;margin-bottom:10px;">📅 فلتر لكل مكان على حده</div>
+        <div style="font-size:.72rem;color:var(--cyan);font-weight:800;margin-bottom:10px;" id="lbl-bp-filter">📅 فلتر لكل مكان على حده</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
           <div style="flex:1;min-width:120px;">
-            <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px;font-weight:700;">من تاريخ</div>
+            <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px;font-weight:700;" id="lbl-bp-from">من تاريخ</div>
             <input type="date" id="bp-date-from" onchange="renderByPlace()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
           </div>
           <div style="flex:1;min-width:120px;">
-            <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px;font-weight:700;">لتاريخ</div>
+            <div style="font-size:.65rem;color:var(--muted);margin-bottom:4px;font-weight:700;" id="lbl-bp-to">لتاريخ</div>
             <input type="date" id="bp-date-to" onchange="renderByPlace()" style="background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;">
           </div>
         </div>
         <div style="display:flex;gap:8px;">
           <input type="month" id="bp-month" onchange="onBpMonthChange()" style="flex:1;background:var(--s3);border:1px solid var(--border);border-radius:10px;padding:9px 10px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;">
-          <button class="btn btn-out" onclick="clearBpFilter()" style="font-size:.75rem;padding:9px 12px;">كل الوقت</button>
+          <button class="btn btn-out" onclick="clearBpFilter()" id="lbl-bp-alltime" style="font-size:.75rem;padding:9px 12px;">كل الوقت</button>
         </div>
       </div>
       <div id="byplace-list"></div>
       <div class="salary-card">
-        <div class="s-row stotal"><span class="lbl">📊 الإجمالي الكلي</span><span class="val" id="bp-gross">0 ج</span></div>
-        <div class="s-row stax"><span class="lbl">🧾 مجموع الضرائب</span><span class="val" id="bp-tax">0 ج</span></div>
-        <div class="s-row snet"><span class="lbl">💰 الصافي الكلي</span><span class="val" id="bp-net">0 ج</span></div>
+        <div class="s-row stotal"><span class="lbl" id="lbl-bp-gross">📊 الإجمالي الكلي</span><span class="val" id="bp-gross">0 ج</span></div>
+        <div class="s-row stax"><span class="lbl" id="lbl-bp-tax">🧾 مجموع الضرائب</span><span class="val" id="bp-tax">0 ج</span></div>
+        <div class="s-row snet"><span class="lbl" id="lbl-bp-net">💰 الصافي الكلي</span><span class="val" id="bp-net">0 ج</span></div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
@@ -986,39 +987,45 @@ function tab(name){
 // ── PLACES ──
 function addPlace(){
   if(!isActivated && isFreeMode && places.length >= FREE_LIMIT){
-    showToast('⚠️ النسخة المجانية: مكان واحد فقط — يمكنك تسجيل شيفتات ومشاهدة الملخص بحرية');
+    showToast(currentLang==='en'?'⚠️ Free version: one place only':'⚠️ النسخة المجانية: مكان واحد فقط — يمكنك تسجيل شيفتات ومشاهدة الملخص بحرية');
     setTimeout(()=>{ showOverlay(); }, 1500);
     return;
   }
   const name=document.getElementById('p-name').value.trim();
   const type=document.getElementById('p-type').value;
   const price=parseFloat(document.getElementById('p-price').value)||0;
-  if(!name){showToast('⚠️ أدخل اسم المكان');return;}
+  if(!name){showToast(currentLang==='en'?'⚠️ Enter place name':'⚠️ أدخل اسم المكان');return;}
   places.push({id:Date.now(),name,type,price});
   save();
   document.getElementById('p-name').value='';
   document.getElementById('p-price').value='';
   renderPlaces();
-  showToast('✅ تم إضافة '+name);
+  showToast((currentLang==='en'?'✅ Added: ':'✅ تم إضافة ')+name);
 }
 function deletePlace(id){
-  if(!confirm('هتحذف المكان ده؟'))return;
+  if(!confirm(currentLang==='en'?'Delete this place?':'هتحذف المكان ده؟'))return;
   places=places.filter(p=>p.id!==id);shifts=shifts.filter(s=>s.placeId!==id);delete placeTax[id];
   save();renderPlaces();
 }
 function renderPlaces(){
+  const isEn = currentLang === 'en';
+  const TLBL = {hour: isEn?'Per Hour':'بالساعة', shift: isEn?'Per Shift':'بالشيفت', case: isEn?'Per Case':'بالحالة'};
   const el=document.getElementById('places-list');
-  const t=document.getElementById('places-sec-title');
-  if(!places.length){t.style.display='none';el.innerHTML='<div class="empty"><div class="ico">🏥</div><p>لم تضف أي أماكن بعد</p></div>';return;}
-  t.style.display='block';
+  const secT=document.getElementById('places-sec-title');
+  if(!places.length){
+    if(secT) secT.style.display='none';
+    el.innerHTML=`<div class="empty"><div class="ico">🏥</div><p>${isEn?'No places added yet':'لم تضف أي أماكن بعد'}</p></div>`;
+    return;
+  }
+  if(secT){ secT.style.display='block'; secT.textContent = isEn?'Registered Workplaces':'أماكن العمل المسجلة'; }
   el.innerHTML=places.map(p=>`
     <div class="place-item">
       <div class="pi-l">
         <div class="pi-ico">🏥</div>
-        <div><div class="pi-name">${p.name}</div><div class="pi-meta">${TYPE_LBL[p.type]} • ${p.price.toLocaleString()} ج</div></div>
+        <div><div class="pi-name">${p.name}</div><div class="pi-meta">${TLBL[p.type]} • ${p.price.toLocaleString()} ${isEn?'EGP':'ج'}</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button class="btn btn-out" style="padding:7px 13px;font-size:.78rem;border-color:rgba(0,229,255,0.3);color:var(--cyan);" onclick="openEditModal(${p.id})">✏️ تعديل</button>
+        <button class="btn btn-out" style="padding:7px 13px;font-size:.78rem;border-color:rgba(0,229,255,0.3);color:var(--cyan);" onclick="openEditModal(${p.id})">✏️ ${isEn?'Edit':'تعديل'}</button>
         <button class="btn btn-red" onclick="deletePlace(${p.id})">🗑️</button>
       </div>
     </div>`).join('');
@@ -1026,10 +1033,11 @@ function renderPlaces(){
 
 // ── LOG ──
 function populateSels(){
+  const isEn = currentLang === 'en';
   ['l-place','f-place'].forEach(id=>{
     const sel=document.getElementById(id);if(!sel)return;
     const prev=sel.value,isF=id==='f-place';
-    sel.innerHTML=isF?'<option value="">كل الأماكن</option>':'<option value="">اختر...</option>';
+    sel.innerHTML=isF?`<option value="">${isEn?'All Places':'كل الأماكن'}</option>`:`<option value="">${isEn?'Select...':'اختر...'}</option>`;
     places.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});
     if(prev)sel.value=prev;
   });
@@ -1051,11 +1059,12 @@ function onPlaceChange(){
   onPayTypeChange();
 }
 function onPayTypeChange(){
+  const isEn = currentLang === 'en';
   const t=document.getElementById('l-pay-type').value;
   const lbl=document.getElementById('l-count-lbl');
-  if(t==='hour')lbl.textContent='عدد الساعات';
-  else if(t==='shift')lbl.textContent='عدد الشيفتات';
-  else lbl.textContent='عدد الحالات';
+  if(t==='hour')     lbl.textContent = isEn ? 'Hours'  : 'عدد الساعات';
+  else if(t==='shift')lbl.textContent = isEn ? 'Shifts' : 'عدد الشيفتات';
+  else               lbl.textContent = isEn ? 'Cases'  : 'عدد الحالات';
 }
 function gv(id){const el=document.getElementById(id);if(!el)return 0;return parseFloat(el.value)||0;}
 
@@ -1118,9 +1127,8 @@ function updatePreview(){
 function saveShift(){
   const pid=parseInt(document.getElementById('l-place').value);
   const p=places.find(x=>x.id===pid);
-  if(!p){showToast('⚠️ اختر مكان العمل');return;}
-  const dateVal=document.getElementById('l-date').value;
-  if(!dateVal){showToast('⚠️ اختر التاريخ');return;}
+  if(!p){showToast(currentLang==='en'?'⚠️ Select a workplace':'⚠️ اختر مكان العمل');return;}
+  if(!dateVal){showToast(currentLang==='en'?'⚠️ Select a date':'⚠️ اختر التاريخ');return;}
   const payType=document.getElementById('l-pay-type').value;
   const payPrice=gv('l-pay-price'),count=gv('l-count');
   const exHC=gv('l-ex-hour-count'),exHP=gv('l-ex-hour-price');
@@ -1147,7 +1155,7 @@ function saveShift(){
   document.getElementById('l-no-place').style.display='block';
   document.getElementById('l-preview').style.display='none';
   document.getElementById('l-place').value='';
-  showToast('✅ تم الحفظ! الإجمالي: '+total.toLocaleString()+' ج');
+  showToast((currentLang==='en'?'✅ Saved! Total: ':'✅ تم الحفظ! الإجمالي: ')+total.toLocaleString()+(currentLang==='en'?' EGP':' ج'));
   tab('shifts');
 }
 
@@ -1163,19 +1171,19 @@ function getFiltered(){
 function renderShifts(){
   const el=document.getElementById('shifts-list');
   const list=getFiltered();
-  if(!list.length){el.innerHTML='<div class="empty"><div class="ico">📋</div><p>لا يوجد شيفتات</p></div>';return;}
-  const PT={hour:'ساعة',shift:'شيفت',case:'حالة'};
+  const isEn = currentLang === 'en';
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="ico">📋</div><p>${isEn?'No shifts yet':'لا يوجد شيفتات بعد'}</p></div>`;return;}
+  const PT={hour: isEn?'hr':'ساعة', shift: isEn?'shift':'شيفت', case: isEn?'case':'حالة'};
   el.innerHTML=list.map(s=>{
     const tags=[];
-    if(s.count)tags.push(`<span class="tag tc">⏱️ ${s.count} ${PT[s.payType]||''} × ${s.payPrice}ج</span>`);
-    if(s.exHC) tags.push(`<span class="tag tv">⚡ ${s.exHC} ${s.exHourName||'ساعات إضافية'}</span>`);
-    if(s.exCC) tags.push(`<span class="tag tg">🏥 ${s.exCC} ${s.exCaseName||'حالات عادية'}</span>`);
-    if(s.exTC) tags.push(`<span class="tag to">🔬 ${s.exTC} ${s.exTechName||'تكنيك'}</span>`);
-    if(s.exOC) tags.push(`<span class="tag ty">🔷 ${s.exOC} ${s.exOtherName||'حالات أخرى'}</span>`);
+    if(s.count)tags.push(`<span class="tag tc">⏱️ ${s.count} ${PT[s.payType]||''} × ${s.payPrice}${isEn?' EGP':'ج'}</span>`);
+    if(s.exHC) tags.push(`<span class="tag tv">⚡ ${s.exHC} ${s.exHourName||(isEn?'Extra Hours':'ساعات إضافية')}</span>`);
+    if(s.exCC) tags.push(`<span class="tag tg">🏥 ${s.exCC} ${s.exCaseName||(isEn?'Regular Cases':'حالات عادية')}</span>`);
+    if(s.exTC) tags.push(`<span class="tag to">🔬 ${s.exTC} ${s.exTechName||(isEn?'Technique':'تكنيك')}</span>`);
+    if(s.exOC) tags.push(`<span class="tag ty">🔷 ${s.exOC} ${s.exOtherName||(isEn?'Other Cases':'حالات أخرى')}</span>`);
     if(s.customExtras) s.customExtras.forEach(r=>{ if(r.count) tags.push(`<span class="tag ty">➕ ${r.count} ${r.name}</span>`); });
     if(s.note) tags.push(`<span class="tag ty">💬 ${s.note}</span>`);
     return `<div class="shift-item">
-      <!-- صف 1: اسم المكان والتاريخ — أزرار التعديل والمسح -->
       <div class="si-row1">
         <div>
           <div class="si-place">🏥 ${s.placeName}</div>
@@ -1186,15 +1194,14 @@ function renderShifts(){
           <button class="btn btn-red" style="padding:7px 12px;font-size:.85rem;" onclick="deleteShift(${s.id})">🗑️</button>
         </div>
       </div>
-      <!-- صف 2: تفاصيل الشيفت — القيمة -->
       <div class="si-row2">
         <div class="si-tags">${tags.join('')}</div>
-        <div class="si-amount">${s.total.toLocaleString()} ج</div>
+        <div class="si-amount">${s.total.toLocaleString()} ${isEn?'EGP':'ج'}</div>
       </div>
     </div>`;
   }).join('');
 }
-function deleteShift(id){if(!confirm('هتحذف الشيفت ده؟'))return;shifts=shifts.filter(s=>s.id!==id);save();renderShifts();}
+function deleteShift(id){if(!confirm(currentLang==='en'?'Delete this shift?':'هتحذف الشيفت ده؟'))return;shifts=shifts.filter(s=>s.id!==id);save();renderShifts();}
 
 function editShift(id){
   const s=shifts.find(x=>x.id===id);
@@ -1246,7 +1253,7 @@ function saveEditShift(){
   save();
   document.getElementById('edit-shift-modal').classList.remove('show');
   renderShifts();
-  showToast('✅ تم التعديل! الإجمالي: '+total.toLocaleString()+' ج');
+  showToast((currentLang==='en'?'✅ Updated! Total: ':'✅ تم التعديل! الإجمالي: ')+total.toLocaleString()+(currentLang==='en'?' EGP':' ج'));
 }
 
 // ── SUMMARY ──
@@ -1292,11 +1299,12 @@ function renderSummary(){
   const taxPct=parseFloat(document.getElementById('tax-pct').value)||0;
   const taxAmt=gross*taxPct/100;
   const net=gross-taxAmt;
-  document.getElementById('sal-base').textContent=basePay.toLocaleString()+' ج';
-  document.getElementById('sal-extra').textContent=extraPay.toLocaleString()+' ج';
-  document.getElementById('sal-gross').textContent=gross.toLocaleString()+' ج';
-  document.getElementById('sal-tax').textContent='- '+taxAmt.toLocaleString()+' ج';
-  document.getElementById('sal-net').textContent=net.toLocaleString()+' ج';
+  const cu = currentLang==='en' ? ' EGP' : ' ج';
+  document.getElementById('sal-base').textContent=basePay.toLocaleString()+cu;
+  document.getElementById('sal-extra').textContent=extraPay.toLocaleString()+cu;
+  document.getElementById('sal-gross').textContent=gross.toLocaleString()+cu;
+  document.getElementById('sal-tax').textContent='- '+taxAmt.toLocaleString()+cu;
+  document.getElementById('sal-net').textContent=net.toLocaleString()+cu;
   document.getElementById('net-salary').textContent=net.toLocaleString();
   document.getElementById('tax-pct-lbl').textContent=taxPct;
 
@@ -1339,50 +1347,51 @@ function renderByPlace(){
     byPlace[k].base+=s.basePay;byPlace[k].extra+=s.extraPay;byPlace[k].total+=s.total;byPlace[k].count++;
   });
 
+  const isEn = currentLang === 'en';
+  const cu = isEn ? ' EGP' : ' ج';
   const bpl=document.getElementById('byplace-list');
   if(!Object.keys(byPlace).length){
-    bpl.innerHTML='<div class="empty" style="padding:30px;"><p>لا بيانات في هذه الفترة</p></div>';
-    ['bp-gross','bp-tax','bp-net'].forEach(id=>document.getElementById(id).textContent='0 ج');
+    bpl.innerHTML=`<div class="empty" style="padding:30px;"><p>${isEn?'No data for this period':'لا بيانات في هذه الفترة'}</p></div>`;
+    ['bp-gross','bp-tax','bp-net'].forEach(id=>document.getElementById(id).textContent='0'+cu);
     return;
   }
   let bpG=0,bpT=0;
   bpl.innerHTML=Object.entries(byPlace).map(([pid,d])=>{
     const st=placeTax[pid]||0,ta=d.total*st/100,pn=d.total-ta;
     bpG+=d.total;bpT+=ta;
-    // عرض فترة الفلتر
     let periodLabel = '';
     if(bm) periodLabel = `<span class="tag tc" style="font-size:.62rem;">${bm}</span>`;
     else if(bf||bt) periodLabel = `<span class="tag tc" style="font-size:.62rem;">${bf||'...'} ← ${bt||'...'}</span>`;
     return `<div class="pplace-card">
       <div class="pplace-head">
         <div>
-          <div class="pplace-name">🏥 ${d.name} <span class="tag tc">${d.count} شيفت</span></div>
+          <div class="pplace-name">🏥 ${d.name} <span class="tag tc">${d.count} ${isEn?'shifts':'شيفت'}</span></div>
           <div style="margin-top:4px;">${periodLabel}</div>
         </div>
-        <div class="pplace-gross">${d.total.toLocaleString()} ج</div>
+        <div class="pplace-gross">${d.total.toLocaleString()}${cu}</div>
       </div>
       <div class="pplace-body">
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px;">
-          <span class="tag tv">أساسي: ${d.base.toLocaleString()} ج</span>
-          <span class="tag to">إضافي: ${d.extra.toLocaleString()} ج</span>
+          <span class="tag tv">${isEn?'Base':'أساسي'}: ${d.base.toLocaleString()}${cu}</span>
+          <span class="tag to">${isEn?'Extra':'إضافي'}: ${d.extra.toLocaleString()}${cu}</span>
         </div>
-        <div class="tax-inline"><label>🧾 ضريبة ${d.name}</label><input type="number" id="ptax-${pid}" value="${st}" min="0" max="100" onchange="updatePlaceTax('${pid}')"><span>%</span></div>
+        <div class="tax-inline"><label>🧾 ${isEn?'Tax':'ضريبة'} ${d.name}</label><input type="number" id="ptax-${pid}" value="${st}" min="0" max="100" onchange="updatePlaceTax('${pid}')"><span>%</span></div>
         <div class="pplace-result">
           <div>
-            <div style="font-size:.68rem;color:var(--muted);">خصم (${st}%)</div>
-            <div style="font-size:.85rem;font-weight:800;color:#ff6b6b;">- ${ta.toLocaleString()} ج</div>
+            <div style="font-size:.68rem;color:var(--muted);">${isEn?'Deduct':'خصم'} (${st}%)</div>
+            <div style="font-size:.85rem;font-weight:800;color:#ff6b6b;">- ${ta.toLocaleString()}${cu}</div>
           </div>
-          <div style="text-align:left;">
-            <div style="font-size:.68rem;color:var(--muted);">الصافي</div>
-            <div style="font-size:1rem;font-weight:900;color:var(--cyan);" id="pnet-${pid}">${pn.toLocaleString()} ج</div>
+          <div style="text-align:${isEn?'right':'left'};">
+            <div style="font-size:.68rem;color:var(--muted);">${isEn?'Net':'الصافي'}</div>
+            <div style="font-size:1rem;font-weight:900;color:var(--cyan);" id="pnet-${pid}">${pn.toLocaleString()}${cu}</div>
           </div>
         </div>
       </div>
     </div>`;
   }).join('');
-  document.getElementById('bp-gross').textContent=bpG.toLocaleString()+' ج';
-  document.getElementById('bp-tax').textContent='- '+bpT.toLocaleString()+' ج';
-  document.getElementById('bp-net').textContent=(bpG-bpT).toLocaleString()+' ج';
+  document.getElementById('bp-gross').textContent=bpG.toLocaleString()+cu;
+  document.getElementById('bp-tax').textContent='- '+bpT.toLocaleString()+cu;
+  document.getElementById('bp-net').textContent=(bpG-bpT).toLocaleString()+cu;
 }
 function updatePlaceTax(pid){
   const val=parseFloat(document.getElementById('ptax-'+pid).value)||0;
@@ -1390,11 +1399,14 @@ function updatePlaceTax(pid){
   renderByPlace();
 }
 function printReport(){
-  // استخدام نفس تنسيق exportPDF بدل window.print()
-  exportPDF();
+  _buildAndOpenReport(true);
 }
 
 function exportPDF(){
+  _buildAndOpenReport(false);
+}
+
+function _buildAndOpenReport(autoPrint){
   // جمع البيانات
   const sm=document.getElementById('s-month').value;
   const sf=document.getElementById('s-date-from')?.value||'';
@@ -1402,19 +1414,19 @@ function exportPDF(){
   let list=[...shifts];
   if(sm) list=list.filter(s=>s.date.startsWith(sm));
   else if(sf||st) list=list.filter(s=>{if(sf&&s.date<sf)return false;if(st&&s.date>st)return false;return true;});
+  if(!list.length){showToast(currentLang==='en'?'⚠️ No data available':'⚠️ لا يوجد بيانات');return;}
 
-  if(!list.length){showToast('⚠️ لا يوجد بيانات');return;}
-
-  // ألوان لكل مكان
-  const placeColors=['#1a73e8','#7c3aed','#00897b','#e65100','#c2185b','#0288d1','#558b2f','#6a1b9a'];
+  const isEn = currentLang === 'en';
+  const dir2 = isEn ? 'ltr' : 'rtl';
+  const placeAccents=['#00e5ff','#7c3aed','#00e676','#ff6d00','#ffd600','#e91e63','#29b6f6','#66bb6a'];
   const byPlace={};
-  const placeColorMap={};
+  const placeAccentMap={};
   let colorIdx=0;
   list.forEach(s=>{
     const k=s.placeId+'';
     if(!byPlace[k]){
       byPlace[k]={name:s.placeName,shifts:[],total:0,base:0,extra:0};
-      placeColorMap[k]=placeColors[colorIdx%placeColors.length];
+      placeAccentMap[k]=placeAccents[colorIdx%placeAccents.length];
       colorIdx++;
     }
     byPlace[k].shifts.push(s);
@@ -1423,61 +1435,75 @@ function exportPDF(){
     byPlace[k].extra+=s.extraPay;
   });
 
-  const period = sm||((sf||'البداية')+' → '+(st||'النهاية'));
+  const period = sm||((sf||( isEn?'Start':'البداية'))+' → '+(st||(isEn?'End':'النهاية')));
   const taxPct = parseFloat(document.getElementById('tax-pct')?.value)||0;
   const grossTotal = list.reduce((a,s)=>a+s.total,0);
   const taxAmt = grossTotal*taxPct/100;
   const netTotal = grossTotal-taxAmt;
+  const totalHours = list.reduce((a,s)=>a+(s.payType==='hour'?s.count:0),0);
 
-  // بناء HTML للـ PDF
   let placesHTML = '';
   Object.entries(byPlace).forEach(([pid,d])=>{
-    const color = placeColorMap[pid];
+    const accent = placeAccentMap[pid];
     const st2 = placeTax[pid]||0;
     const ta = d.total*st2/100;
     const pn = d.total-ta;
-    
-    let rowsHTML = d.shifts.map(s=>`
-      <tr>
-        <td>${fmtDate(s.date)}</td>
-        <td>${s.count||0} ${isEn?(s.payType==='hour'?'hr':s.payType==='shift'?'shift':'case'):(s.payType==='hour'?'ساعة':s.payType==='shift'?'شيفت':'حالة')} × ${(s.payPrice||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
-        <td>${(s.basePay||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
-        <td>${(s.extraPay||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
-        <td style="font-weight:700;">${(s.total||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
-      </tr>`).join('');
+    const PT={hour:isEn?'hr':'ساعة',shift:isEn?'shift':'شيفت',case:isEn?'case':'حالة'};
 
-    const isEn = currentLang === 'en';
+    let rowsHTML = d.shifts.map((s,i)=>{
+      // بناء خلية التفاصيل
+      const details=[];
+      if(s.count) details.push(`${s.count} ${PT[s.payType]||''} × ${(s.payPrice||0).toLocaleString()} ج`);
+      if(s.exHC) details.push(`⚡ ${s.exHC} ${s.exHourName||'إضافي'}`);
+      if(s.exCC) details.push(`🩺 ${s.exCC} ${s.exCaseName||'عادية'}`);
+      if(s.exTC) details.push(`🔬 ${s.exTC} ${s.exTechName||'تكنيك'}`);
+      if(s.exOC) details.push(`🔷 ${s.exOC} ${s.exOtherName||'أخرى'}`);
+      if(s.customExtras) s.customExtras.forEach(r=>{if(r.count)details.push(`➕ ${r.count} ${r.name}`);});
+      const rowBg = i%2===0 ? 'background:#131f35;' : 'background:#0f1a2e;';
+      return `<tr style="${rowBg}">
+        <td style="color:#a0b4d0;">${fmtDate(s.date)}</td>
+        <td style="color:#cdd8e8;">${details.join(' | ')}</td>
+        <td style="color:#00e5ff;">${(s.basePay||0).toLocaleString()} ج</td>
+        <td style="color:#a78bfa;">${(s.extraPay||0).toLocaleString()} ج</td>
+        <td style="color:#00e676;font-weight:800;">${(s.total||0).toLocaleString()} ج</td>
+      </tr>`;
+    }).join('');
+
     placesHTML += `
-      <div class="place-block">
-        <div class="place-head" style="background:${color};">
-          <span class="pn">🏥 ${d.name}</span>
-          <span class="ps">${d.shifts.length} ${isEn?'shifts':'شيفت'} | ${isEn?'Total':'الإجمالي'}: ${d.total.toLocaleString()} ${isEn?'EGP':'ج'}</span>
+    <div class="place-block" style="border:1px solid ${accent}33;">
+      <div class="place-head" style="background:linear-gradient(135deg,#0d1525,#162440);border-bottom:2px solid ${accent};">
+        <div>
+          <div style="font-size:.95rem;font-weight:900;color:${accent};">🏥 ${d.name}</div>
+          <div style="font-size:.72rem;color:#546e7a;margin-top:2px;">${d.shifts.length} ${isEn?'shifts':'شيفت'} &nbsp;|&nbsp; ${isEn?'Period':'الفترة'}: ${period}</div>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>${isEn?'Date':'التاريخ'}</th>
-              <th>${isEn?'Details':'التفاصيل'}</th>
-              <th>${isEn?'Base':'الأساسي'}</th>
-              <th>${isEn?'Extra':'الإضافي'}</th>
-              <th>${isEn?'Total':'الإجمالي'}</th>
-            </tr>
-          </thead>
-          <tbody>${rowsHTML}</tbody>
-          <tfoot>
-            <tr>
-              <td colspan="2">${isEn?'Tax':'الضريبة'}: ${st2}%</td>
-              <td>${d.base.toLocaleString()} ${isEn?'EGP':'ج'}</td>
-              <td>${d.extra.toLocaleString()} ${isEn?'EGP':'ج'}</td>
-              <td style="color:${color};">${isEn?'Net':'صافي'}: ${pn.toLocaleString()} ${isEn?'EGP':'ج'}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>`;
+        <div style="text-align:${isEn?'right':'left'};">
+          <div style="font-size:1.1rem;font-weight:900;color:#00e676;">${d.total.toLocaleString()} ج</div>
+          <div style="font-size:.7rem;color:#546e7a;">${isEn?'Gross':'الإجمالي'}</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr style="background:#0a1020;">
+            <th>${isEn?'Date':'التاريخ'}</th>
+            <th>${isEn?'Details':'التفاصيل'}</th>
+            <th style="color:#00e5ff;">${isEn?'Base':'الأساسي'}</th>
+            <th style="color:#a78bfa;">${isEn?'Extra':'الإضافي'}</th>
+            <th style="color:#00e676;">${isEn?'Total':'الإجمالي'}</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHTML}</tbody>
+        <tfoot>
+          <tr style="background:#0d1525;border-top:1px solid ${accent}44;">
+            <td colspan="2" style="color:#ffd600;">🧾 ${isEn?'Tax':'الضريبة'}: ${st2}% &nbsp;&mdash;&nbsp; خصم: <span style="color:#ff6b6b;">${ta.toLocaleString()} ج</span></td>
+            <td style="color:#00e5ff;">${d.base.toLocaleString()} ج</td>
+            <td style="color:#a78bfa;">${d.extra.toLocaleString()} ج</td>
+            <td style="color:${accent};font-size:.9rem;font-weight:900;">💰 ${isEn?'Net':'صافي'}: ${pn.toLocaleString()} ج</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
   });
 
-  const isEn2 = currentLang === 'en';
-  const dir2 = isEn2 ? 'ltr' : 'rtl';
   const html = `<!DOCTYPE html>
 <html dir="${dir2}" lang="${currentLang}">
 <head>
@@ -1485,72 +1511,101 @@ function exportPDF(){
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-  @page{margin:10mm;}
+  @page{margin:8mm 10mm;}
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:Cairo,Arial,sans-serif;background:#f0f2f8;color:#1a1a2e;direction:${dir2};}
-  .page{max-width:800px;margin:0 auto;padding:16px;}
-  /* هيدر */
-  .rpt-header{background:linear-gradient(135deg,#1a1a2e 0%,#3b0e8a 60%,#7c3aed 100%);color:#fff;padding:18px 22px;border-radius:14px;margin-bottom:14px;text-align:center;box-shadow:0 4px 20px rgba(124,58,237,0.4);}
-  .rpt-header h1{font-size:1.7rem;font-weight:900;letter-spacing:4px;font-family:Arial Black,Arial;}
-  .rpt-header .sub{font-size:.82rem;opacity:.75;margin-top:5px;}
-  /* بطاقات الملخص */
+  body{
+    font-family:Cairo,Arial,sans-serif;
+    background:#060b14;
+    color:#e8f0fe;
+    direction:${dir2};
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .page{max-width:820px;margin:0 auto;padding:16px;}
+
+  /* ── HEADER ── */
+  .rpt-header{
+    background:linear-gradient(135deg,#0d1525 0%,#1e0a4a 50%,#3b0e8a 100%);
+    border:1px solid rgba(124,58,237,0.5);
+    color:#fff;padding:20px 24px;border-radius:16px;margin-bottom:14px;text-align:center;
+    position:relative;overflow:hidden;
+  }
+  .rpt-header::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:30px 30px;}
+  .rpt-header h1{font-size:2rem;font-weight:900;letter-spacing:6px;font-family:Arial Black,Arial;color:#00e5ff;text-shadow:0 0 20px rgba(0,229,255,0.5);position:relative;}
+  .rpt-header .sub{font-size:.82rem;color:rgba(255,255,255,0.6);margin-top:6px;position:relative;}
+
+  /* ── STAT CARDS ── */
   .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-  .sum-card{background:#fff;border-radius:12px;padding:12px 8px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.07);border-top:3px solid;}
-  .sum-card .sv{font-size:1.25rem;font-weight:900;margin-bottom:3px;}
-  .sum-card .sl{font-size:.68rem;color:#666;}
-  /* صافي */
-  .net-card{background:linear-gradient(135deg,#1a1a2e,#7c3aed);color:#fff;border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;box-shadow:0 4px 20px rgba(124,58,237,0.35);}
-  .net-card .nl{font-size:.8rem;opacity:.8;margin-bottom:6px;}
-  .net-card .nv{font-size:2rem;font-weight:900;}
-  .net-card .nd{font-size:.78rem;opacity:.65;margin-top:5px;}
-  /* جدول المكان */
-  .place-block{margin-bottom:14px;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
-  .place-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;color:#fff;}
-  .place-head .pn{font-size:.95rem;font-weight:900;}
-  .place-head .ps{font-size:.78rem;opacity:.85;}
-  table{width:100%;border-collapse:collapse;background:#fff;}
-  thead tr{background:#f5f5f5;}
-  th{padding:7px 10px;font-size:.72rem;font-weight:700;color:#444;border-bottom:2px solid #eee;}
-  td{padding:7px 10px;font-size:.75rem;border-bottom:1px solid #f0f0f0;}
-  tr:last-child td{border-bottom:none;}
-  tr:nth-child(even) td{background:#fafafa;}
-  tfoot tr td{font-weight:800;font-size:.78rem;background:#f8f8f8;border-top:2px solid #eee;}
+  .sum-card{
+    background:#0d1525;border-radius:14px;padding:14px 10px;text-align:center;
+    border:1px solid;position:relative;overflow:hidden;
+  }
+  .sum-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:inherit;}
+  .sum-card .sv{font-size:1.4rem;font-weight:900;margin-bottom:4px;}
+  .sum-card .sl{font-size:.68rem;color:#546e7a;font-weight:600;}
+
+  /* ── NET CARD ── */
+  .net-card{
+    background:linear-gradient(135deg,#0d1525 0%,rgba(124,58,237,0.25) 100%);
+    border:1px solid rgba(0,229,255,0.3);
+    border-radius:16px;padding:20px;text-align:center;margin-bottom:14px;
+  }
+  .net-card .nl{font-size:.8rem;color:rgba(255,255,255,0.6);margin-bottom:8px;}
+  .net-card .nv{font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,#00e676,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2;}
+  .net-card .nd{font-size:.78rem;color:rgba(255,255,255,0.45);margin-top:6px;}
+
+  /* ── PLACE BLOCK ── */
+  .place-block{margin-bottom:14px;border-radius:14px;overflow:hidden;}
+  .place-head{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+
+  table{width:100%;border-collapse:collapse;}
+  thead tr{background:#0a1020;}
+  th{padding:8px 10px;font-size:.7rem;font-weight:800;color:#546e7a;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid rgba(0,229,255,0.1);}
+  td{padding:8px 10px;font-size:.75rem;border-bottom:none;}
+  tfoot tr td{font-weight:700;font-size:.78rem;}
+
   @media print{
-    body{background:#fff;}
-    .place-block{box-shadow:none;border:1px solid #ddd;}
-    .rpt-header,.net-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .sum-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    .place-head{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    body{background:#060b14 !important;}
+    .rpt-header,.net-card,.sum-card,.place-head,thead tr,tfoot tr{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
   }
 </style>
 </head>
 <body>
 <div class="page">
+
   <div class="rpt-header">
     <h1>⚡ SHIFTATY</h1>
-    <div class="sub">${isEn2?'Salary Report':'تقرير المرتب'} | ${period}</div>
+    <div class="sub">${isEn?'Salary Report':'تقرير المرتب'} &nbsp;|&nbsp; ${period}</div>
   </div>
+
   <div class="sum-grid">
-    <div class="sum-card" style="border-color:#1a73e8;">
-      <div class="sv" style="color:#1a73e8;">${list.length}</div>
-      <div class="sl">${isEn2?'Total Shifts':'إجمالي الشيفتات'}</div>
+    <div class="sum-card" style="border-color:rgba(0,229,255,0.3);">
+      <div class="sv" style="color:#00e5ff;">${list.length}</div>
+      <div class="sl">${isEn?'Total Shifts':'إجمالي الشيفتات'}</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#00e5ff;"></div>
     </div>
-    <div class="sum-card" style="border-color:#7c3aed;">
-      <div class="sv" style="color:#7c3aed;">${Object.keys(byPlace).length}</div>
-      <div class="sl">${isEn2?'Workplaces':'أماكن العمل'}</div>
+    <div class="sum-card" style="border-color:rgba(124,58,237,0.3);">
+      <div class="sv" style="color:#a78bfa;">${Object.keys(byPlace).length}</div>
+      <div class="sl">${isEn?'Workplaces':'أماكن العمل'}</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#7c3aed;"></div>
     </div>
-    <div class="sum-card" style="border-color:#00897b;">
-      <div class="sv" style="color:#00897b;">${grossTotal.toLocaleString()}</div>
-      <div class="sl">${isEn2?'Grand Total (EGP)':'الإجمالي الكلي (ج)'}</div>
+    <div class="sum-card" style="border-color:rgba(0,230,118,0.3);">
+      <div class="sv" style="color:#00e676;">${grossTotal.toLocaleString()}</div>
+      <div class="sl">${isEn?'Grand Total (EGP)':'الإجمالي الكلي (ج)'}</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#00e676;"></div>
     </div>
   </div>
+
   <div class="net-card">
-    <div class="nl">💰 ${isEn2?'Net Salary After Tax':'صافي المرتب بعد الضريبة'} (${taxPct}%)</div>
-    <div class="nv">${netTotal.toLocaleString()} ${isEn2?'EGP':'جنيه'}</div>
-    ${taxAmt>0?'<div class="nd">'+( isEn2?'Tax Deduction: ':'خصم ضريبة: ')+taxAmt.toLocaleString()+(isEn2?' EGP':' ج')+'</div>':''}
+    <div class="nl">💰 ${isEn?'Net Salary After Tax':'صافي المرتب بعد الضريبة'} (${taxPct}%)</div>
+    <div class="nv">${netTotal.toLocaleString()} ${isEn?'EGP':'جنيه'}</div>
+    ${taxAmt>0?`<div class="nd">${isEn?'Tax Deduction:':'خصم ضريبة:'} ${taxAmt.toLocaleString()} ${isEn?'EGP':'ج'}</div>`:''}
   </div>
+
   ${placesHTML}
+
 </div>
+${autoPrint?'<script>window.onload=function(){window.print();}<\/script>':''}
 </body>
 </html>`;
 
@@ -1558,7 +1613,6 @@ function exportPDF(){
   if(!win){showToast('⚠️ افتح الـ popup في المتصفح');return;}
   win.document.write(html);
   win.document.close();
-  win.onload = ()=>{ win.focus(); win.print(); };
 }
 
 
@@ -1632,33 +1686,141 @@ function toggleLang(){
 
 function applyLang(){
   const isEn = currentLang === 'en';
+  const E = T.en, A = T.ar;
+
   document.getElementById('lang-label').textContent = isEn ? 'عربي' : 'English';
   document.documentElement.dir = isEn ? 'ltr' : 'rtl';
   document.documentElement.lang = currentLang;
-  
-  // تحديث النصوص
-  const updates = {
-    'header-subtitle': t('subtitle'),
-    'nav-summary-lbl': t('nav_summary'),
-    'nav-log-lbl': t('nav_log'),
-    'nav-shift-lbl': t('nav_shift'),
-    'nav-places-lbl': t('nav_places'),
-    'add-place-title': t('add_place'),
-    'add-place-btn-lbl': t('add_place_btn'),
-    'shift-form-title': t('shift_title'),
-    'save-shift-lbl': t('save_shift'),
-    'summary-title-lbl': t('summary'),
-    'print-btn-lbl': t('print'),
-    'export-pdf-lbl': t('export_pdf'),
-    'share-btn-lbl': t('share_btn'),
-    'all-time-lbl': t('all_time'),
-    'extra-head-lbl': t('extras'),
-    'add-extra-lbl': t('add_extra'),
-  };
-  Object.entries(updates).forEach(([id, txt]) => {
-    const el = document.getElementById(id);
-    if(el) el.textContent = txt;
-  });
+
+  // helper — set text if element exists
+  const s = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  const v = (id, val) => { const el=document.getElementById(id); if(el) el.value=val; };  // for input values
+
+  // ── HEADER ──
+  s('header-subtitle',         isEn ? E.subtitle        : A.subtitle);
+
+  // ── NAV ──
+  s('nav-places-lbl',  isEn ? 'Places'   : 'الأماكن');
+  s('nav-shift-lbl',   isEn ? 'Shift'    : 'شيفت');
+  s('nav-log-lbl',     isEn ? 'Log'      : 'السجل');
+  s('nav-summary-lbl', isEn ? 'Summary'  : 'الملخص');
+
+  // ── PLACES PANEL ──
+  s('add-place-title',    isEn ? '🏥 Add New Workplace'       : '🏥 إضافة مكان عمل جديد');
+  s('lbl-place-name',     isEn ? 'Place Name'                 : 'اسم المكان');
+  s('lbl-pay-type',       isEn ? 'Pay Type'                   : 'نوع الأجر');
+  s('lbl-price',          isEn ? 'Price (EGP)'                : 'السعر (جنيه)');
+  s('add-place-btn-lbl',  isEn ? '🏥 Add Place'               : '🏥 إضافة المكان');
+  s('places-sec-title',   isEn ? 'Registered Workplaces'      : 'أماكن العمل المسجلة');
+  s('no-places-lbl',      isEn ? 'No places added yet'        : 'لم تضف أي أماكن بعد');
+
+  // place type options
+  const optHourP  = document.getElementById('opt-hour-p');
+  const optShiftP = document.getElementById('opt-shift-p');
+  const optCaseP  = document.getElementById('opt-case-p');
+  if(optHourP)  optHourP.textContent  = isEn ? 'Per Hour'  : 'بالساعة';
+  if(optShiftP) optShiftP.textContent = isEn ? 'Per Shift' : 'بالشيفت';
+  if(optCaseP)  optCaseP.textContent  = isEn ? 'Per Case'  : 'بالحالة';
+
+  // ── LOG PANEL ──
+  s('shift-form-title',    isEn ? '➕ New Shift'              : '➕ شيفت جديد');
+  s('lbl-workplace',       isEn ? 'Workplace'                 : 'مكان العمل');
+  s('lbl-date',            isEn ? 'Date'                      : 'التاريخ');
+  s('lbl-pay-type-section',isEn ? 'Pay Type & Rate'           : 'نوع الأجر والسعر');
+  s('lbl-pay-per',         isEn ? 'Pay Type'                  : 'نوع الأجر');
+  s('lbl-pay-price',       isEn ? 'Price'                     : 'السعر');
+  s('l-count-lbl',         isEn ? 'Count'                     : 'العدد');
+  s('extra-head-lbl',      isEn ? '⚡ Extras'                 : '⚡ الإضافي');
+  s('lbl-ex-label',        isEn ? 'Label'                     : 'التسمية');
+  s('lbl-ex-count',        isEn ? 'Count'                     : 'العدد');
+  s('lbl-ex-price',        isEn ? 'Price'                     : 'السعر');
+  s('lbl-notes',           isEn ? 'Notes'                     : 'ملاحظات');
+  s('lbl-preview',         isEn ? 'Expected Total'            : 'الإجمالي المتوقع');
+  s('save-shift-lbl',      isEn ? '💾 Save Shift'             : '💾 حفظ الشيفت');
+  s('add-extra-lbl',       isEn ? '➕ Add Extra Item'         : '➕ إضافة عنصر إضافي');
+
+  // default extra row name values (input values, not labels)
+  const exHourName  = document.getElementById('l-ex-hour-name');
+  const exCaseName  = document.getElementById('l-ex-case-name');
+  const exTechName  = document.getElementById('l-ex-tech-name');
+  const exOtherName = document.getElementById('l-ex-other-name');
+  if(exHourName  && (exHourName.value==='ساعات إضافية'||exHourName.value==='Extra Hours'))   exHourName.value  = isEn ? 'Extra Hours'    : 'ساعات إضافية';
+  if(exCaseName  && (exCaseName.value==='حالات عادية'||exCaseName.value==='Regular Cases'))   exCaseName.value  = isEn ? 'Regular Cases'  : 'حالات عادية';
+  if(exTechName  && (exTechName.value==='تكنيك'||exTechName.value==='Technique'))             exTechName.value  = isEn ? 'Technique'      : 'تكنيك';
+  if(exOtherName && (exOtherName.value==='حالات أخرى'||exOtherName.value==='Other Cases'))    exOtherName.value = isEn ? 'Other Cases'    : 'حالات أخرى';
+
+  // pay type options in log form
+  const optHourL  = document.getElementById('opt-hour-l');
+  const optShiftL = document.getElementById('opt-shift-l');
+  const optCaseL  = document.getElementById('opt-case-l');
+  if(optHourL)  optHourL.textContent  = isEn ? 'Hour'  : 'ساعة';
+  if(optShiftL) optShiftL.textContent = isEn ? 'Shift' : 'شيفت';
+  if(optCaseL)  optCaseL.textContent  = isEn ? 'Case'  : 'حالة';
+
+  // l-no-place message
+  const noPlaceEl = document.getElementById('l-no-place');
+  if(noPlaceEl) noPlaceEl.textContent = isEn ? '⬆️ Select a workplace first' : '⬆️ اختر مكان عمل أولاً';
+
+  // ── SUMMARY PANEL ──
+  s('lbl-report-title',  isEn ? 'Salary Report'          : 'تقرير المرتب');
+  s('lbl-from-date',     isEn ? '📅 From Date'           : '📅 من تاريخ');
+  s('lbl-to-date',       isEn ? '📅 To Date'             : '📅 لتاريخ');
+  s('lbl-or-month',      isEn ? '🗓️ Or select month'    : '🗓️ أو اختر شهر');
+  s('all-time-lbl',      isEn ? 'All Time'               : 'كل الوقت');
+  s('lbl-st-shifts',     isEn ? 'Shifts'                 : 'شيفتات');
+  s('lbl-st-hours',      isEn ? 'Hours'                  : 'ساعات');
+  s('lbl-st-cases',      isEn ? 'Cases'                  : 'حالات');
+  s('lbl-vt-total',      isEn ? 'Total'                  : 'الكلي');
+  s('lbl-vt-byplace',    isEn ? 'Per Place'              : 'لكل مكان');
+  s('lbl-tax-pct',       isEn ? '🧾 Tax Rate'            : '🧾 نسبة الضريبة');
+  s('lbl-net-salary',    isEn ? 'Net Salary'             : 'صافي المرتب');
+  s('lbl-currency',      isEn ? 'Egyptian Pound'         : 'جنيه مصري');
+  s('lbl-base-pay',      isEn ? '🏥 Base Pay'            : '🏥 أجر أساسي');
+  s('lbl-extra-pay',     isEn ? '⚡ Extra'               : '⚡ إضافي');
+  s('lbl-gross',         isEn ? '📊 Gross Total'         : '📊 الإجمالي');
+  s('lbl-net-row',       isEn ? '💰 Net'                 : '💰 الصافي');
+  s('lbl-bp-filter',     isEn ? '📅 Filter Per Place'    : '📅 فلتر لكل مكان على حده');
+  s('lbl-bp-from',       isEn ? 'From Date'              : 'من تاريخ');
+  s('lbl-bp-to',         isEn ? 'To Date'                : 'لتاريخ');
+  s('lbl-bp-alltime',    isEn ? 'All Time'               : 'كل الوقت');
+  s('lbl-bp-gross',      isEn ? '📊 Grand Total'         : '📊 الإجمالي الكلي');
+  s('lbl-bp-tax',        isEn ? '🧾 Total Tax'           : '🧾 مجموع الضرائب');
+  s('lbl-bp-net',        isEn ? '💰 Net Total'           : '💰 الصافي الكلي');
+
+  // tax row label (has inner span so handle separately)
+  const taxRowEl = document.getElementById('lbl-tax-row');
+  if(taxRowEl){
+    const taxPctVal = document.getElementById('tax-pct-lbl')?.textContent || '0';
+    taxRowEl.innerHTML = isEn
+      ? `🧾 Tax (<span id="tax-pct-lbl">${taxPctVal}</span>%)`
+      : `🧾 ضريبة (<span id="tax-pct-lbl">${taxPctVal}</span>%)`;
+  }
+
+  // ── PRINT / PDF BUTTONS ──
+  s('print-btn-lbl',   isEn ? '🖨️ Print'      : '🖨️ طباعة');
+  s('export-pdf-lbl',  isEn ? '📄 Export PDF'  : '📄 تصدير PDF');
+
+  // ── SHIFTS PANEL filter placeholder ──
+  const fPlaceEl = document.getElementById('f-place');
+  if(fPlaceEl && fPlaceEl.options[0]) fPlaceEl.options[0].textContent = isEn ? 'All Places' : 'كل الأماكن';
+
+  // ── SHARE BUTTON ──
+  s('share-btn-lbl', isEn ? '🔗 Share' : '🔗 مشاركة');
+
+  // ── summary-title-lbl (if exists) ──
+  s('summary-title-lbl', isEn ? 'Salary Summary' : 'ملخص المرتب');
+
+  s('wa-btn-lbl',    isEn ? '💬 Contact on WhatsApp'      : '💬 تواصل على واتساب للترقية');
+  s('code-btn-lbl',  isEn ? '🔑 I have an activation code' : '🔑 عندي كود تفعيل');
+
+  // ── PLACEHOLDERS ──
+  const pName = document.getElementById('p-name');
+  if(pName) pName.placeholder = isEn ? 'e.g. City Hospital' : 'مثال: مستشفى النور';
+
+  // re-render dynamic content so tags inside show correct language
+  renderShifts();
+  renderPlaces();
+  renderByPlace();
 }
 
 // ── HELPERS ──
