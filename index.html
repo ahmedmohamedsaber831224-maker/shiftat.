@@ -206,7 +206,7 @@
   .modal-title{font-size:1rem;font-weight:800;color:var(--cyan);margin-bottom:18px;text-align:center;}
 
   /* ── ACTIVATION OVERLAY ── */
-  .act-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.97);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+  .act-overlay{position:fixed;inset:0;background:rgba(6,11,20,0.97);z-index:9999;display:none;align-items:flex-end;justify-content:center;padding:0;}
   .act-box{background:var(--s1);border:1px solid rgba(0,229,255,0.2);border-radius:24px 24px 0 0;padding:24px 20px 36px;max-width:480px;width:100%;text-align:center;}
   .act-icon{font-size:3rem;margin-bottom:14px;}
   .act-title{font-size:1.3rem;font-weight:900;color:var(--cyan);margin-bottom:6px;}
@@ -742,19 +742,15 @@ function gasCall(params){
 
 function checkActivation(){
   if(isActivated || isFreeMode){
-    document.getElementById('act-overlay').style.display='none';
+    hideOverlay();
+    document.getElementById('upgrade-banner').style.display = (isFreeMode && !isActivated) ? 'block' : 'none';
   } else {
-    document.getElementById('act-overlay').style.display='flex';
-  }
-  if(isFreeMode && !isActivated){
-    document.getElementById('upgrade-banner').style.display='block';
-  } else {
-    document.getElementById('upgrade-banner').style.display='none';
+    showOverlay();
   }
 }
 
 function showUpgrade(){
-  document.getElementById('act-overlay').style.display='flex';
+  showOverlay();
   setTimeout(function(){ document.getElementById('act-code-input').focus(); }, 300);
 }
 
@@ -763,11 +759,19 @@ function useFree(){
   isActivated = false;
   localStorage.setItem('sj_freemode','true');
   localStorage.removeItem('sj_activated');
-  const overlay = document.getElementById('act-overlay');
-  overlay.style.display = 'none';
-  overlay.style.visibility = 'visible'; // مهم: ما نخبيش visibility
+  hideOverlay();
   document.getElementById('upgrade-banner').style.display = 'block';
   showToast('✅ النسخة المجانية — مكان واحد + شيفتات غير محدودة');
+}
+
+function showOverlay(){
+  const o = document.getElementById('act-overlay');
+  o.style.display = 'flex';
+}
+
+function hideOverlay(){
+  const o = document.getElementById('act-overlay');
+  o.style.display = 'none';
 }
 
 async function tryActivate(){
@@ -787,7 +791,7 @@ async function tryActivate(){
       isActivated=true; isFreeMode=false;
       localStorage.setItem('sj_activated','true');
       localStorage.removeItem('sj_freemode');
-      document.getElementById('act-overlay').style.display='none';
+      hideOverlay();
       document.getElementById('upgrade-banner').style.display='none';
       showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
     } else {
@@ -808,7 +812,7 @@ function _activateSuccess(){
   isActivated=true; isFreeMode=false;
   localStorage.setItem('sj_activated','true');
   localStorage.removeItem('sj_freemode');
-  document.getElementById('act-overlay').style.display='none';
+  hideOverlay();
   document.getElementById('upgrade-banner').style.display='none';
   showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
 }
@@ -988,7 +992,7 @@ function tab(name){
 function addPlace(){
   if(!isActivated && isFreeMode && places.length >= FREE_LIMIT){
     showToast('⚠️ النسخة المجانية: مكان واحد فقط — يمكنك تسجيل شيفتات ومشاهدة الملخص بحرية');
-    setTimeout(()=>{ document.getElementById('act-overlay').style.display='flex'; }, 1500);
+    setTimeout(()=>{ showOverlay(); }, 1500);
     return;
   }
   const name=document.getElementById('p-name').value.trim();
@@ -1537,10 +1541,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderPlaces();populateSels();
 
   // Header tap for admin — على كلمة "سجل" بس
-  document.getElementById('admin-trigger').addEventListener('click', headerTap);
-  document.getElementById('admin-trigger').addEventListener('touchend', function(e){
+  // tap counter — click بس (touchend بيعمل double count)
+  let _tapCount = 0, _tapTimer = null;
+  document.getElementById('admin-trigger').addEventListener('click', function(e){
     e.preventDefault();
-    headerTap();
+    _tapCount++;
+    if(_tapTimer) clearTimeout(_tapTimer);
+    _tapTimer = setTimeout(function(){ _tapCount = 0; }, 3000);
+    if(_tapCount >= 10){
+      _tapCount = 0;
+      clearTimeout(_tapTimer);
+      const pass = prompt('🔐 أدخل باسورد لوحة التحكم:');
+      if(pass === ADMIN_PASS){ openAdmin(); }
+      else if(pass !== null){ showToast('❌ باسورد غلط'); }
+    }
   });
 
   // Check activation on load
