@@ -290,9 +290,14 @@
 <body>
 <div class="wrap">
   <div class="header">
-    <div class="hbadge">⚡ SHIFT TRACKER</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div class="hbadge">⚡ SHIFT TRACKER</div>
+      <div id="lang-toggle" onclick="toggleLang()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:4px 12px;cursor:pointer;font-size:.78rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;-webkit-user-select:none;user-select:none;">
+        <span id="lang-icon">🌐</span><span id="lang-label">English</span>
+      </div>
+    </div>
     <h1 id="admin-trigger" style="cursor:pointer;-webkit-user-select:none;user-select:none;"><span class="hc" style="font-family:Arial Black,Arial;letter-spacing:2px;">SHIFTATY</span></h1>
-    <p>تتبع ساعات عملك وأرباحك في كل مكان</p>
+    <p id="header-subtitle">تتبع ساعات عملك وأرباحك في كل مكان</p>
     <div id="upgrade-banner" style="display:none;margin-top:12px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
         <a href="https://wa.me/201116631624?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B4%D8%AA%D8%B1%D9%8A%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%D8%A9%20%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84%D8%A9%20%D9%85%D9%86%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B3%D8%AC%D9%84%20%D8%B4%D9%8A%D9%81%D8%AA%D8%A7%D8%AA%D9%8A%20%F0%9F%92%B0" target="_blank" style="background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:10px 18px;border-radius:25px;font-family:Cairo,sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 15px rgba(37,211,102,0.4);">
@@ -383,7 +388,7 @@
           <div class="field"><label id="l-count-lbl">العدد</label><input type="number" id="l-count" placeholder="0" min="0" oninput="updatePreview()"></div>
         </div>
         <div class="extra-box">
-          <div class="extra-head">⚡ الإضافي</div>
+          <div class="extra-head" id="extra-head-lbl">⚡ الإضافي</div>
           <!-- صف الساعات الإضافية -->
           <div style="display:grid;grid-template-columns:1fr 80px 80px;gap:6px;align-items:end;margin-bottom:6px;">
             <div><div style="font-size:.6rem;color:var(--muted);margin-bottom:3px;">التسمية</div>
@@ -524,8 +529,8 @@
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
-      <button class="btn btn-pdf" onclick="printReport()">🖨️ طباعة عادية</button>
-      <button class="btn" onclick="exportPDF()" style="background:linear-gradient(135deg,#1a73e8,#00e5ff);color:#fff;width:100%;padding:15px;font-size:.95rem;">📄 تصدير PDF</button>
+      <button class="btn btn-pdf" onclick="printReport()"><span id="print-btn-lbl">🖨️ طباعة</span></button>
+      <button class="btn" onclick="exportPDF()" style="background:linear-gradient(135deg,#1a73e8,#00e5ff);color:#fff;width:100%;padding:15px;font-size:.95rem;"><span id="export-pdf-lbl">📄 تصدير PDF</span></button>
     </div>
     <div style="height:10px;"></div>
   </div>
@@ -663,10 +668,10 @@
 
 <!-- Bottom Nav -->
 <nav class="bnav">
-  <button class="bnav-btn on" type="button" onclick="event.preventDefault();event.stopPropagation();tab('places');return false;"><span class="ico">🏥</span>الأماكن</button>
-  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('log');return false;"><span class="ico">➕</span>شيفت</button>
-  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('shifts');return false;"><span class="ico">📋</span>السجل</button>
-  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('summary');return false;"><span class="ico">💰</span>الملخص</button>
+  <button class="bnav-btn on" type="button" onclick="event.preventDefault();event.stopPropagation();tab('places');return false;"><span class="ico">🏥</span><span id="nav-places-lbl">الأماكن</span></button>
+  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('log');return false;"><span class="ico">➕</span><span id="nav-shift-lbl">شيفت</span></button>
+  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('shifts');return false;"><span class="ico">📋</span><span id="nav-log-lbl">السجل</span></button>
+  <button class="bnav-btn" type="button" onclick="event.preventDefault();event.stopPropagation();tab('summary');return false;"><span class="ico">💰</span><span id="nav-summary-lbl">الملخص</span></button>
 </nav>
 
 <script>
@@ -1385,8 +1390,8 @@ function updatePlaceTax(pid){
   renderByPlace();
 }
 function printReport(){
-  document.getElementById('print-range').textContent=document.getElementById('s-month').value||'كل الفترات';
-  window.print();
+  // استخدام نفس تنسيق exportPDF بدل window.print()
+  exportPDF();
 }
 
 function exportPDF(){
@@ -1435,89 +1440,225 @@ function exportPDF(){
     let rowsHTML = d.shifts.map(s=>`
       <tr>
         <td>${fmtDate(s.date)}</td>
-        <td>${s.count||0} ${s.payType==='hour'?'ساعة':s.payType==='shift'?'شيفت':'حالة'} × ${(s.payPrice||0).toLocaleString()} ج</td>
-        <td>${(s.basePay||0).toLocaleString()} ج</td>
-        <td>${(s.extraPay||0).toLocaleString()} ج</td>
-        <td style="font-weight:700;">${(s.total||0).toLocaleString()} ج</td>
+        <td>${s.count||0} ${isEn?(s.payType==='hour'?'hr':s.payType==='shift'?'shift':'case'):(s.payType==='hour'?'ساعة':s.payType==='shift'?'شيفت':'حالة')} × ${(s.payPrice||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
+        <td>${(s.basePay||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
+        <td>${(s.extraPay||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
+        <td style="font-weight:700;">${(s.total||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
       </tr>`).join('');
 
+    const isEn = currentLang === 'en';
     placesHTML += `
-      <div style="margin-bottom:20px;border-radius:10px;overflow:hidden;border:2px solid ${color};">
-        <div style="background:${color};color:#fff;padding:10px 15px;display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:1rem;font-weight:800;">🏥 ${d.name}</span>
-          <span style="font-size:.85rem;">${d.shifts.length} شيفت | الإجمالي: ${d.total.toLocaleString()} ج</span>
+      <div class="place-block">
+        <div class="place-head" style="background:${color};">
+          <span class="pn">🏥 ${d.name}</span>
+          <span class="ps">${d.shifts.length} ${isEn?'shifts':'شيفت'} | ${isEn?'Total':'الإجمالي'}: ${d.total.toLocaleString()} ${isEn?'EGP':'ج'}</span>
         </div>
-        <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
+        <table>
           <thead>
-            <tr style="background:${color}22;">
-              <th style="padding:6px 10px;text-align:right;border-bottom:1px solid ${color}44;">التاريخ</th>
-              <th style="padding:6px 10px;text-align:right;border-bottom:1px solid ${color}44;">التفاصيل</th>
-              <th style="padding:6px 10px;text-align:right;border-bottom:1px solid ${color}44;">الأساسي</th>
-              <th style="padding:6px 10px;text-align:right;border-bottom:1px solid ${color}44;">الإضافي</th>
-              <th style="padding:6px 10px;text-align:right;border-bottom:1px solid ${color}44;">الإجمالي</th>
+            <tr>
+              <th>${isEn?'Date':'التاريخ'}</th>
+              <th>${isEn?'Details':'التفاصيل'}</th>
+              <th>${isEn?'Base':'الأساسي'}</th>
+              <th>${isEn?'Extra':'الإضافي'}</th>
+              <th>${isEn?'Total':'الإجمالي'}</th>
             </tr>
           </thead>
           <tbody>${rowsHTML}</tbody>
           <tfoot>
-            <tr style="background:${color}15;font-weight:800;">
-              <td colspan="2" style="padding:8px 10px;">الضريبة: ${st2}%</td>
-              <td style="padding:8px 10px;">${d.base.toLocaleString()} ج</td>
-              <td style="padding:8px 10px;">${d.extra.toLocaleString()} ج</td>
-              <td style="padding:8px 10px;color:${color};">صافي: ${pn.toLocaleString()} ج</td>
+            <tr>
+              <td colspan="2">${isEn?'Tax':'الضريبة'}: ${st2}%</td>
+              <td>${d.base.toLocaleString()} ${isEn?'EGP':'ج'}</td>
+              <td>${d.extra.toLocaleString()} ${isEn?'EGP':'ج'}</td>
+              <td style="color:${color};">${isEn?'Net':'صافي'}: ${pn.toLocaleString()} ${isEn?'EGP':'ج'}</td>
             </tr>
           </tfoot>
         </table>
       </div>`;
   });
 
+  const isEn2 = currentLang === 'en';
+  const dir2 = isEn2 ? 'ltr' : 'rtl';
   const html = `<!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html dir="${dir2}" lang="${currentLang}">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+  @page{margin:10mm;}
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:Cairo,Arial,sans-serif;background:#f8f9fa;color:#1a1a2e;direction:rtl;}
-  .container{max-width:800px;margin:0 auto;padding:20px;}
-  .header{background:linear-gradient(135deg,#1a1a2e,#7c3aed);color:#fff;padding:20px 25px;border-radius:12px;margin-bottom:20px;text-align:center;}
-  .header h1{font-size:1.8rem;font-weight:900;letter-spacing:3px;}
-  .header p{font-size:.85rem;opacity:.8;margin-top:4px;}
-  .summary-box{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
-  .sum-card{background:#fff;border-radius:10px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);}
-  .sum-card .val{font-size:1.3rem;font-weight:900;}
-  .sum-card .lbl{font-size:.72rem;color:#666;margin-top:3px;}
-  .net-box{background:linear-gradient(135deg,#1a1a2e,#7c3aed);color:#fff;border-radius:12px;padding:15px;text-align:center;margin-bottom:20px;}
-  .net-box .big{font-size:2rem;font-weight:900;}
-  .net-box .lbl{font-size:.85rem;opacity:.8;}
-  @media print{body{background:#fff;}.container{padding:10px;}}
+  body{font-family:Cairo,Arial,sans-serif;background:#f0f2f8;color:#1a1a2e;direction:${dir2};}
+  .page{max-width:800px;margin:0 auto;padding:16px;}
+  /* هيدر */
+  .rpt-header{background:linear-gradient(135deg,#1a1a2e 0%,#3b0e8a 60%,#7c3aed 100%);color:#fff;padding:18px 22px;border-radius:14px;margin-bottom:14px;text-align:center;box-shadow:0 4px 20px rgba(124,58,237,0.4);}
+  .rpt-header h1{font-size:1.7rem;font-weight:900;letter-spacing:4px;font-family:Arial Black,Arial;}
+  .rpt-header .sub{font-size:.82rem;opacity:.75;margin-top:5px;}
+  /* بطاقات الملخص */
+  .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+  .sum-card{background:#fff;border-radius:12px;padding:12px 8px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.07);border-top:3px solid;}
+  .sum-card .sv{font-size:1.25rem;font-weight:900;margin-bottom:3px;}
+  .sum-card .sl{font-size:.68rem;color:#666;}
+  /* صافي */
+  .net-card{background:linear-gradient(135deg,#1a1a2e,#7c3aed);color:#fff;border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;box-shadow:0 4px 20px rgba(124,58,237,0.35);}
+  .net-card .nl{font-size:.8rem;opacity:.8;margin-bottom:6px;}
+  .net-card .nv{font-size:2rem;font-weight:900;}
+  .net-card .nd{font-size:.78rem;opacity:.65;margin-top:5px;}
+  /* جدول المكان */
+  .place-block{margin-bottom:14px;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+  .place-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;color:#fff;}
+  .place-head .pn{font-size:.95rem;font-weight:900;}
+  .place-head .ps{font-size:.78rem;opacity:.85;}
+  table{width:100%;border-collapse:collapse;background:#fff;}
+  thead tr{background:#f5f5f5;}
+  th{padding:7px 10px;font-size:.72rem;font-weight:700;color:#444;border-bottom:2px solid #eee;}
+  td{padding:7px 10px;font-size:.75rem;border-bottom:1px solid #f0f0f0;}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:#fafafa;}
+  tfoot tr td{font-weight:800;font-size:.78rem;background:#f8f8f8;border-top:2px solid #eee;}
+  @media print{
+    body{background:#fff;}
+    .place-block{box-shadow:none;border:1px solid #ddd;}
+    .rpt-header,.net-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .sum-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .place-head{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
+<div class="page">
+  <div class="rpt-header">
     <h1>⚡ SHIFTATY</h1>
-    <p>تقرير المرتب | ${period}</p>
+    <div class="sub">${isEn2?'Salary Report':'تقرير المرتب'} | ${period}</div>
   </div>
-  <div class="summary-box">
-    <div class="sum-card"><div class="val" style="color:#1a73e8;">${list.length}</div><div class="lbl">إجمالي الشيفتات</div></div>
-    <div class="sum-card"><div class="val" style="color:#7c3aed;">${Object.keys(byPlace).length}</div><div class="lbl">أماكن العمل</div></div>
-    <div class="sum-card"><div class="val" style="color:#00897b;">${grossTotal.toLocaleString()} ج</div><div class="lbl">الإجمالي الكلي</div></div>
+  <div class="sum-grid">
+    <div class="sum-card" style="border-color:#1a73e8;">
+      <div class="sv" style="color:#1a73e8;">${list.length}</div>
+      <div class="sl">${isEn2?'Total Shifts':'إجمالي الشيفتات'}</div>
+    </div>
+    <div class="sum-card" style="border-color:#7c3aed;">
+      <div class="sv" style="color:#7c3aed;">${Object.keys(byPlace).length}</div>
+      <div class="sl">${isEn2?'Workplaces':'أماكن العمل'}</div>
+    </div>
+    <div class="sum-card" style="border-color:#00897b;">
+      <div class="sv" style="color:#00897b;">${grossTotal.toLocaleString()}</div>
+      <div class="sl">${isEn2?'Grand Total (EGP)':'الإجمالي الكلي (ج)'}</div>
+    </div>
   </div>
-  <div class="net-box">
-    <div class="lbl">💰 صافي المرتب بعد الضريبة (${taxPct}%)</div>
-    <div class="big">${netTotal.toLocaleString()} جنيه</div>
-    ${taxAmt>0?'<div style="font-size:.8rem;opacity:.7;margin-top:4px;">خصم ضريبة: '+taxAmt.toLocaleString()+' ج</div>':''}
+  <div class="net-card">
+    <div class="nl">💰 ${isEn2?'Net Salary After Tax':'صافي المرتب بعد الضريبة'} (${taxPct}%)</div>
+    <div class="nv">${netTotal.toLocaleString()} ${isEn2?'EGP':'جنيه'}</div>
+    ${taxAmt>0?'<div class="nd">'+( isEn2?'Tax Deduction: ':'خصم ضريبة: ')+taxAmt.toLocaleString()+(isEn2?' EGP':' ج')+'</div>':''}
   </div>
   ${placesHTML}
 </div>
 </body>
 </html>`;
 
-  // فتح في نافذة جديدة وطباعة كـ PDF
   const win = window.open('','_blank');
+  if(!win){showToast('⚠️ افتح الـ popup في المتصفح');return;}
   win.document.write(html);
   win.document.close();
   win.onload = ()=>{ win.focus(); win.print(); };
+}
+
+
+// ── LANGUAGE SYSTEM ──
+let currentLang = localStorage.getItem('sj_lang') || 'ar';
+
+const T = {
+  ar: {
+    subtitle: 'تتبع ساعات عملك وأرباحك في كل مكان',
+    nav_summary: 'الملخص', nav_log: 'السجل', nav_shift: 'شيفت', nav_places: 'الأماكن',
+    add_place: 'إضافة مكان عمل جديد', place_name: 'اسم المكان', pay_type: 'نوع الأجر',
+    price: 'السعر (جنيه)', add_place_btn: '🏥 إضافة المكان',
+    shift_title: 'تسجيل شيفت جديد', select_place: 'اختر مكان العمل',
+    date: 'التاريخ', pay_per: 'الأجر لكل', pay_price: 'السعر', count: 'العدد',
+    extras: '⚡ الإضافي', notes: 'ملاحظات', save_shift: '💾 حفظ الشيفت',
+    summary: 'ملخص المرتب', print: '<span id="print-btn-lbl">🖨️ طباعة</span>', export_pdf: '<span id="export-pdf-lbl">📄 تصدير PDF</span>',
+    total: 'الإجمالي الكلي', tax: 'مجموع الضرائب', net: '💰 الصافي الكلي',
+    all_places: 'كل الأماكن', by_place: 'لكل مكان',
+    no_shifts: 'لا يوجد شيفتات مسجلة', shifts: 'شيفت',
+    lang_switch: 'English', lang_icon: '🌐',
+    hour: 'بالساعة', shift: 'بالشيفت', case: 'بالحالة',
+    hours_extra: 'ساعات إضافية', cases: 'حالات عادية', tech: 'تكنيك', other: 'حالات أخرى',
+    add_extra: '➕ إضافة عنصر إضافي',
+    wa_btn: '💬 تواصل على واتساب للترقية', code_btn: '🔑 عندي كود تفعيل',
+    share_btn: '🔗 مشاركة', all_time: 'كل الوقت',
+    from_date: 'من تاريخ', to_date: 'إلى تاريخ', month: 'أو اختر شهر',
+    gross: 'الإجمالي', extra: 'إضافي', base: 'أساسي',
+    report_title: 'تقرير المرتب', total_shifts: 'إجمالي الشيفتات',
+    workplaces: 'أماكن العمل', grand_total: 'الإجمالي الكلي',
+    net_salary: 'صافي المرتب بعد الضريبة', tax_deduct: 'خصم ضريبة',
+    date_col: 'التاريخ', details_col: 'التفاصيل', base_col: 'الأساسي',
+    extra_col: 'الإضافي', total_col: 'الإجمالي', tax_row: 'الضريبة', net_col: 'صافي',
+    pound: 'ج', period_start: 'البداية', period_end: 'النهاية',
+  },
+  en: {
+    subtitle: 'Track your work hours & earnings everywhere',
+    nav_summary: 'Summary', nav_log: 'Log', nav_shift: 'Shift', nav_places: 'Places',
+    add_place: 'Add New Workplace', place_name: 'Place Name', pay_type: 'Pay Type',
+    price: 'Price (EGP)', add_place_btn: '🏥 Add Place',
+    shift_title: 'Log New Shift', select_place: 'Select Workplace',
+    date: 'Date', pay_per: 'Pay Per', pay_price: 'Price', count: 'Count',
+    extras: '⚡ Extras', notes: 'Notes', save_shift: '💾 Save Shift',
+    summary: 'Salary Summary', print: '🖨️ Print', export_pdf: '📄 Export PDF',
+    total: 'Gross Total', tax: 'Total Tax', net: '💰 Net Total',
+    all_places: 'All Places', by_place: 'Per Place',
+    no_shifts: 'No shifts recorded', shifts: 'shifts',
+    lang_switch: 'عربي', lang_icon: '🌐',
+    hour: 'Per Hour', shift: 'Per Shift', case: 'Per Case',
+    hours_extra: 'Extra Hours', cases: 'Regular Cases', tech: 'Technique', other: 'Other Cases',
+    add_extra: '➕ Add Extra Item',
+    wa_btn: '💬 Contact on WhatsApp', code_btn: '🔑 I have an activation code',
+    share_btn: '🔗 Share', all_time: 'All Time',
+    from_date: 'From Date', to_date: 'To Date', month: 'Or select month',
+    gross: 'Gross', extra: 'Extra', base: 'Base',
+    report_title: 'Salary Report', total_shifts: 'Total Shifts',
+    workplaces: 'Workplaces', grand_total: 'Grand Total',
+    net_salary: 'Net Salary After Tax', tax_deduct: 'Tax Deduction',
+    date_col: 'Date', details_col: 'Details', base_col: 'Base',
+    extra_col: 'Extra', total_col: 'Total', tax_row: 'Tax', net_col: 'Net',
+    pound: 'EGP', period_start: 'Start', period_end: 'End',
+  }
+};
+
+function t(key){ return (T[currentLang] && T[currentLang][key]) || T['ar'][key] || key; }
+
+function toggleLang(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('sj_lang', currentLang);
+  applyLang();
+}
+
+function applyLang(){
+  const isEn = currentLang === 'en';
+  document.getElementById('lang-label').textContent = isEn ? 'عربي' : 'English';
+  document.documentElement.dir = isEn ? 'ltr' : 'rtl';
+  document.documentElement.lang = currentLang;
+  
+  // تحديث النصوص
+  const updates = {
+    'header-subtitle': t('subtitle'),
+    'nav-summary-lbl': t('nav_summary'),
+    'nav-log-lbl': t('nav_log'),
+    'nav-shift-lbl': t('nav_shift'),
+    'nav-places-lbl': t('nav_places'),
+    'add-place-title': t('add_place'),
+    'add-place-btn-lbl': t('add_place_btn'),
+    'shift-form-title': t('shift_title'),
+    'save-shift-lbl': t('save_shift'),
+    'summary-title-lbl': t('summary'),
+    'print-btn-lbl': t('print'),
+    'export-pdf-lbl': t('export_pdf'),
+    'share-btn-lbl': t('share_btn'),
+    'all-time-lbl': t('all_time'),
+    'extra-head-lbl': t('extras'),
+    'add-extra-lbl': t('add_extra'),
+  };
+  Object.entries(updates).forEach(([id, txt]) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = txt;
+  });
 }
 
 // ── HELPERS ──
@@ -1580,6 +1721,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // Check activation on load
   checkActivation();
+  // تطبيق اللغة المحفوظة
+  if(localStorage.getItem('sj_lang') === 'en') applyLang();
 
   // Register SW
   // Service Worker — تحديث تلقائي فور رفع نسخة جديدة
