@@ -112,13 +112,15 @@
   .pi-price{font-size:.88rem;font-weight:800;color:var(--cyan);}
 
   /* ── SHIFT ITEMS ── */
-  .shift-item{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:11px;position:relative;overflow:hidden;}
+  .shift-item{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:12px 14px;margin-bottom:8px;position:relative;overflow:hidden;}
   .shift-item::before{content:'';position:absolute;right:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--cyan),var(--violet));}
-  .si-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-  .si-place{font-weight:800;font-size:.95rem;}
-  .si-date{font-size:.72rem;color:var(--muted);margin-top:2px;}
-  .si-amount{font-size:1.3rem;font-weight:900;color:var(--green);}
-  .si-tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .si-row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .si-place{font-weight:900;font-size:1rem;color:var(--text);}
+  .si-date{font-size:.7rem;color:var(--muted);margin-top:2px;}
+  .si-amount{font-size:1.1rem;font-weight:900;color:var(--green);white-space:nowrap;}
+  .si-row2{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px;}
+  .si-tags{display:flex;gap:5px;flex-wrap:wrap;flex:1;}
+  .si-actions{display:flex;gap:5px;flex-shrink:0;}
   .tag{padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;}
   .tc{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.2);}
   .tv{background:rgba(124,58,237,0.1);color:#a78bfa;border:1px solid rgba(124,58,237,0.2);}
@@ -293,7 +295,7 @@
     <p>تتبع ساعات عملك وأرباحك في كل مكان</p>
     <div id="upgrade-banner" style="display:none;margin-top:12px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
-        <a href="https://wa.me/201158760466?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B4%D8%AA%D8%B1%D9%8A%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%D8%A9%20%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84%D8%A9%20%D9%85%D9%86%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B3%D8%AC%D9%84%20%D8%B4%D9%8A%D9%81%D8%AA%D8%A7%D8%AA%D9%8A%20%F0%9F%92%B0" target="_blank" style="background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:10px 18px;border-radius:25px;font-family:Cairo,sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 15px rgba(37,211,102,0.4);">
+        <a href="https://wa.me/201116631624?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B4%D8%AA%D8%B1%D9%8A%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%D8%A9%20%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84%D8%A9%20%D9%85%D9%86%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B3%D8%AC%D9%84%20%D8%B4%D9%8A%D9%81%D8%AA%D8%A7%D8%AA%D9%8A%20%F0%9F%92%B0" target="_blank" style="background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:10px 18px;border-radius:25px;font-family:Cairo,sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 15px rgba(37,211,102,0.4);">
           💬 تواصل على واتساب للترقية
         </a>
         <button onclick="showUpgrade()" style="background:linear-gradient(135deg,#ff6d00,#ffd600);color:#000;border:none;padding:10px 18px;border-radius:25px;font-family:Cairo,sans-serif;font-weight:900;font-size:.82rem;cursor:pointer;box-shadow:0 4px 15px rgba(255,109,0,0.4);">
@@ -617,7 +619,7 @@
     <div class="act-price-badge">100 جنيه فقط</div>
     <div class="act-sub">✅ مجاناً: مكان واحد + تسجيل شيفتات + ملخص كامل<br>⭐ مدفوع (100ج): أماكن غير محدودة</div>
 
-    <a href="https://wa.me/201158760466?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B4%D8%AA%D8%B1%D9%8A%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%D8%A9%20%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84%D8%A9%20%D9%85%D9%86%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B3%D8%AC%D9%84%20%D8%B4%D9%8A%D9%81%D8%AA%D8%A7%D8%AA%D9%8A%20%F0%9F%92%B0" target="_blank" style="display:block;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:13px;border-radius:13px;font-family:Cairo,sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;text-decoration:none;text-align:center;margin-bottom:10px;box-shadow:0 4px 20px rgba(37,211,102,0.3);">💬 تواصل على واتساب للدفع والترقية</a>
+    <a href="https://wa.me/201116631624?text=%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B4%D8%AA%D8%B1%D9%8A%20%D8%A7%D9%84%D9%86%D8%B3%D8%AE%D8%A9%20%D8%A7%D9%84%D9%83%D8%A7%D9%85%D9%84%D8%A9%20%D9%85%D9%86%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B3%D8%AC%D9%84%20%D8%B4%D9%8A%D9%81%D8%AA%D8%A7%D8%AA%D9%8A%20%F0%9F%92%B0" target="_blank" style="display:block;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;padding:13px;border-radius:13px;font-family:Cairo,sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;text-decoration:none;text-align:center;margin-bottom:10px;box-shadow:0 4px 20px rgba(37,211,102,0.3);">💬 تواصل على واتساب للدفع والترقية</a>
     <button class="act-free-btn" onclick="useFree()">🆓 استخدام النسخة المجانية</button>
 
     <div class="act-pay-box">
@@ -817,19 +819,7 @@ function _activateSuccess(){
   showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
 }
 
-// ── فتح لوحة التحكم بالضغط 10 مرات على الهيدر ──
-let headerTaps=0, headerTimer=null;
-function headerTap(){
-  headerTaps++;
-  if(headerTimer) clearTimeout(headerTimer);
-  headerTimer = setTimeout(()=>{ headerTaps=0; }, 2000);
-  if(headerTaps >= 10){
-    headerTaps=0;
-    const pass = prompt('🔐 أدخل باسورد لوحة التحكم:');
-    if(pass === ADMIN_PASS){ openAdmin(); }
-    else if(pass !== null){ showToast('❌ باسورد غلط'); }
-  }
-}
+// tap counter في DOMContentLoaded
 
 function openAdmin(){
   renderAdminCodes();
@@ -1072,10 +1062,30 @@ function addExtraRow(){
   const div = document.createElement('div');
   div.id = 'extra-row-' + id;
   div.style.cssText = 'display:grid;grid-template-columns:1fr 80px 80px 30px;gap:6px;align-items:end;margin-bottom:6px;';
-  div.innerHTML = '<div><input type="text" id="l-ex-'+id+'-name" placeholder="اسم العنصر" style="background:var(--s3);border:1px solid var(--cyan);border-radius:8px;padding:6px 8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.75rem;outline:none;width:100%;box-sizing:border-box;"></div>'
-    + '<div><input type="number" id="l-ex-'+id+'-count" placeholder="0" min="0" oninput="updatePreview()" style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;box-sizing:border-box;text-align:center;"></div>'
-    + '<div><input type="number" id="l-ex-'+id+'-price" placeholder="0" min="0" oninput="updatePreview()" style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;box-sizing:border-box;text-align:center;"></div>'
-    + '<button type="button" onclick="document.getElementById('extra-row-'+id+'').remove();updatePreview();" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;border-radius:8px;padding:6px;cursor:pointer;font-size:.9rem;">✕</button>';
+  
+  const nameInput = document.createElement('input');
+  nameInput.type='text'; nameInput.id='l-ex-'+id+'-name'; nameInput.placeholder='اسم العنصر';
+  nameInput.style.cssText='background:var(--s3);border:1px solid var(--cyan);border-radius:8px;padding:6px 8px;color:var(--text);font-family:Cairo,sans-serif;font-size:.75rem;outline:none;width:100%;box-sizing:border-box;';
+  
+  const countInput = document.createElement('input');
+  countInput.type='number'; countInput.id='l-ex-'+id+'-count'; countInput.placeholder='0'; countInput.min='0';
+  countInput.oninput=updatePreview;
+  countInput.style.cssText='background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;box-sizing:border-box;text-align:center;';
+  
+  const priceInput = document.createElement('input');
+  priceInput.type='number'; priceInput.id='l-ex-'+id+'-price'; priceInput.placeholder='0'; priceInput.min='0';
+  priceInput.oninput=updatePreview;
+  priceInput.style.cssText='background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);font-family:Cairo,sans-serif;font-size:.8rem;outline:none;width:100%;box-sizing:border-box;text-align:center;';
+  
+  const delBtn = document.createElement('button');
+  delBtn.type='button'; delBtn.textContent='✕';
+  delBtn.style.cssText='background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#ef4444;border-radius:8px;padding:6px;cursor:pointer;font-size:.9rem;';
+  delBtn.onclick=function(){ div.remove(); updatePreview(); };
+  
+  const d1=document.createElement('div'); d1.appendChild(nameInput);
+  const d2=document.createElement('div'); d2.appendChild(countInput);
+  const d3=document.createElement('div'); d3.appendChild(priceInput);
+  div.appendChild(d1); div.appendChild(d2); div.appendChild(d3); div.appendChild(delBtn);
   document.getElementById('extra-custom-rows').appendChild(div);
 }
 
@@ -1160,17 +1170,22 @@ function renderShifts(){
     if(s.customExtras) s.customExtras.forEach(r=>{ if(r.count) tags.push(`<span class="tag ty">➕ ${r.count} ${r.name}</span>`); });
     if(s.note) tags.push(`<span class="tag ty">💬 ${s.note}</span>`);
     return `<div class="shift-item">
-      <div class="si-top">
-        <div><div class="si-place">🏥 ${s.placeName}</div><div class="si-date">📅 ${fmtDate(s.date)}</div></div>
-        <div style="text-align:left;">
-          <div class="si-amount">${s.total.toLocaleString()} ج</div>
-          <div style="display:flex;gap:5px;margin-top:5px;">
-            <button class="btn" style="background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:6px 10px;font-size:.75rem;" onclick="editShift(${s.id})">✏️</button>
-            <button class="btn btn-red" style="padding:6px 10px;font-size:.75rem;" onclick="deleteShift(${s.id})">🗑️</button>
-          </div>
+      <!-- صف 1: اسم المكان والتاريخ — أزرار التعديل والمسح -->
+      <div class="si-row1">
+        <div>
+          <div class="si-place">🏥 ${s.placeName}</div>
+          <div class="si-date">📅 ${fmtDate(s.date)}</div>
+        </div>
+        <div class="si-actions">
+          <button class="btn" style="background:rgba(0,229,255,0.15);border:1px solid var(--cyan);color:var(--cyan);padding:7px 12px;font-size:.85rem;" onclick="editShift(${s.id})">✏️</button>
+          <button class="btn btn-red" style="padding:7px 12px;font-size:.85rem;" onclick="deleteShift(${s.id})">🗑️</button>
         </div>
       </div>
-      <div class="si-tags">${tags.join('')}</div>
+      <!-- صف 2: تفاصيل الشيفت — القيمة -->
+      <div class="si-row2">
+        <div class="si-tags">${tags.join('')}</div>
+        <div class="si-amount">${s.total.toLocaleString()} ج</div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1515,6 +1530,12 @@ function showToast(msg){
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded',()=>{
+  // لو في ?reset في الـ URL — امسح كل حاجة وابدأ من الأول
+  if(window.location.search.includes('reset')){
+    localStorage.clear();
+    window.location.href = window.location.pathname;
+    return;
+  }
   // إخفاء أزرار التثبيت لو التطبيق متثبت فعلاً
   const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
   if(isStandalone){
