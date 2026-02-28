@@ -251,15 +251,36 @@
     .field input,.field select{font-size:.88rem;padding:11px 12px;}
   }
   @media print {
-    body{background:#fff!important;color:#000!important;padding:0!important;}
+    @page { margin: 10mm; }
+    body{background:#fff!important;color:#000!important;padding:0!important;font-size:11px!important;}
     body::before,body::after{display:none!important;}
-    .bnav,.btn,.filter-row,.vtoggle,.install-banner{display:none!important;}
+    .bnav,.btn,.filter-row,.vtoggle,.install-banner,#install-row,#ios-instructions{display:none!important;}
     .panel{display:block!important;}
     #panel-summary{display:block!important;}
     #panel-places,#panel-log,#panel-shifts{display:none!important;}
     *{color:#000!important;-webkit-text-fill-color:#000!important;text-shadow:none!important;box-shadow:none!important;}
-    .card,.salary-card,.pplace-card,.stat-box{border:1px solid #ddd!important;background:#fff!important;}
+    .card,.salary-card,.pplace-card,.stat-box{border:1px solid #ccc!important;background:#f9f9f9!important;margin-bottom:6px!important;padding:8px!important;break-inside:avoid;}
     .print-hdr{display:block!important;}
+    /* تصغير المسافات */
+    .pplace-card{margin-bottom:5px!important;padding:8px 10px!important;}
+    .pplace-head{margin-bottom:4px!important;}
+    .pplace-body{padding-top:6px!important;}
+    .salary-card{padding:10px!important;}
+    .s-row{padding:4px 0!important;}
+    .stat-grid{gap:6px!important;margin-bottom:8px!important;}
+    .stat-box{padding:8px!important;}
+    .stat-num{font-size:1.3rem!important;}
+    /* تصغير الأيقونات */
+    .pplace-name{font-size:.8rem!important;}
+    .pplace-gross{font-size:.85rem!important;}
+    .tag{font-size:.65rem!important;padding:2px 6px!important;}
+    .bn-val{font-size:1.6rem!important;}
+    .lbl,.val{font-size:.78rem!important;}
+    /* منع قطع الكارد على صفحتين */
+    .pplace-card, .salary-card{page-break-inside:avoid;}
+    .vtoggle{display:none!important;}
+    #view-byplace{display:block!important;}
+    #view-total{display:block!important;}
   }
   .print-hdr{display:none;text-align:center;margin-bottom:16px;}
 </style>
@@ -1259,7 +1280,16 @@ function renderByPlace(){
           <span class="tag to">إضافي: ${d.extra.toLocaleString()} ج</span>
         </div>
         <div class="tax-inline"><label>🧾 ضريبة ${d.name}</label><input type="number" id="ptax-${pid}" value="${st}" min="0" max="100" onchange="updatePlaceTax('${pid}')"><span>%</span></div>
-        <div class="pplace-result"><span class="rl">خصم: ${ta.toLocaleString()} ج</span><span class="rv" id="pnet-${pid}">${pn.toLocaleString()} ج</span></div>
+        <div class="pplace-result">
+          <div>
+            <div style="font-size:.68rem;color:var(--muted);">خصم (${st}%)</div>
+            <div style="font-size:.85rem;font-weight:800;color:#ff6b6b;">- ${ta.toLocaleString()} ج</div>
+          </div>
+          <div style="text-align:left;">
+            <div style="font-size:.68rem;color:var(--muted);">الصافي</div>
+            <div style="font-size:1rem;font-weight:900;color:var(--cyan);" id="pnet-${pid}">${pn.toLocaleString()} ج</div>
+          </div>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1270,18 +1300,7 @@ function renderByPlace(){
 function updatePlaceTax(pid){
   const val=parseFloat(document.getElementById('ptax-'+pid).value)||0;
   placeTax[pid]=val;save();
-  const sm=document.getElementById('s-month').value;
-  let list=[...shifts];if(sm)list=list.filter(s=>s.date.startsWith(sm));
-  const byPlace={};
-  list.forEach(s=>{const k=s.placeId+'';if(!byPlace[k])byPlace[k]={total:0};byPlace[k].total+=s.total;});
-  let bpG=0,bpT=0;
-  Object.entries(byPlace).forEach(([k,d])=>{
-    const t=placeTax[k]||0,ta=d.total*t/100;bpG+=d.total;bpT+=ta;
-    const ne=document.getElementById('pnet-'+k);if(ne)ne.textContent=(d.total-ta).toLocaleString()+' ج';
-  });
-  document.getElementById('bp-gross').textContent=bpG.toLocaleString()+' ج';
-  document.getElementById('bp-tax').textContent='- '+bpT.toLocaleString()+' ج';
-  document.getElementById('bp-net').textContent=(bpG-bpT).toLocaleString()+' ج';
+  renderByPlace();
 }
 function printReport(){document.getElementById('print-range').textContent=document.getElementById('s-month').value||'كل الفترات';window.print();}
 
