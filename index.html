@@ -289,7 +289,7 @@
 <div class="wrap">
   <div class="header">
     <div class="hbadge">⚡ SHIFT TRACKER</div>
-    <h1><span class="hc" id="admin-trigger" style="cursor:pointer;font-family:Arial Black,Arial;letter-spacing:2px;">SHIFTATY</span></h1>
+    <h1 id="admin-trigger" style="cursor:pointer;-webkit-user-select:none;user-select:none;"><span class="hc" style="font-family:Arial Black,Arial;letter-spacing:2px;">SHIFTATY</span></h1>
     <p>تتبع ساعات عملك وأرباحك في كل مكان</p>
     <div id="upgrade-banner" style="display:none;margin-top:12px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
@@ -763,15 +763,11 @@ function useFree(){
   isActivated = false;
   localStorage.setItem('sj_freemode','true');
   localStorage.removeItem('sj_activated');
-  // إخفاء الأوفرلاي نهائياً
   const overlay = document.getElementById('act-overlay');
-  overlay.style.display='none';
-  overlay.style.visibility='hidden';
-  // إظهار بانر الترقية
-  document.getElementById('upgrade-banner').style.display='block';
-  // تحديث الواجهة
+  overlay.style.display = 'none';
+  overlay.style.visibility = 'visible'; // مهم: ما نخبيش visibility
+  document.getElementById('upgrade-banner').style.display = 'block';
   showToast('✅ النسخة المجانية — مكان واحد + شيفتات غير محدودة');
-  tab('places');
 }
 
 async function tryActivate(){
@@ -817,7 +813,7 @@ function _activateSuccess(){
   showToast('🎉 تم التفعيل! مرحباً بك في النسخة الكاملة');
 }
 
-// ── فتح لوحة التحكم بالضغط 5 مرات على الهيدر ──
+// ── فتح لوحة التحكم بالضغط 10 مرات على الهيدر ──
 let headerTaps=0, headerTimer=null;
 function headerTap(){
   headerTaps++;
@@ -1542,6 +1538,10 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // Header tap for admin — على كلمة "سجل" بس
   document.getElementById('admin-trigger').addEventListener('click', headerTap);
+  document.getElementById('admin-trigger').addEventListener('touchend', function(e){
+    e.preventDefault();
+    headerTap();
+  });
 
   // Check activation on load
   checkActivation();
