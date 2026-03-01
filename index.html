@@ -958,9 +958,7 @@ function shareApp(){
   if(navigator.share){
     navigator.share({title:'⚡ SHIFTATY', text:'shiftaty.github.io', url:appUrl}).catch(()=>{});
   } else {
-    navigator.clipboard?.writeText(appUrl).then(()=>{
-      showToast('📋 تم نسخ الرابط!');
-    }).catch(()=>{ prompt('انسخ الرابط:', appUrl); });
+    navigator.clipboard?.writeText(appUrl).then(()=>showToast('📋 تم نسخ الرابط!')).catch(()=>prompt('انسخ الرابط:',appUrl));
   }
 }
 
@@ -1402,309 +1400,168 @@ function updatePlaceTax(pid){
   placeTax[pid]=val;save();
   renderByPlace();
 }
-function printReport(){
-  _buildReportHTML(true);
-}
+function printReport(){ _openReportWindow(true); }
+function exportPDF(){ _shareReportAsImage(); }
 
-function exportPDF(){
-  _shareReportAsImage();
-}
-
-// ── مشاركة التقرير كصورة ──
-async function _shareReportAsImage(){
+// ══ بناء بيانات التقرير ══
+function _getReportData(){
   const sm=document.getElementById('s-month').value;
   const sf=document.getElementById('s-date-from')?.value||'';
   const stv=document.getElementById('s-date-to')?.value||'';
   let list=[...shifts];
   if(sm) list=list.filter(s=>s.date.startsWith(sm));
   else if(sf||stv) list=list.filter(s=>{if(sf&&s.date<sf)return false;if(stv&&s.date>stv)return false;return true;});
-  if(!list.length){showToast(currentLang==='en'?'⚠️ No data':'⚠️ لا يوجد بيانات');return;}
+  return list;
+}
 
-  const isEn=currentLang==='en';
+// ══ HTML التقرير بنفس تنسيق الصورة ══
+function _buildReportHTML(list, isEn, autoPrint){
   const cu=isEn?' EGP':' ج';
+  const dir2=isEn?'ltr':'rtl';
   const taxPct=parseFloat(document.getElementById('tax-pct')?.value)||0;
   const grossTotal=list.reduce((a,s)=>a+s.total,0);
   const taxAmt=grossTotal*taxPct/100;
   const netTotal=grossTotal-taxAmt;
+  const sm=document.getElementById('s-month').value;
+  const sf=document.getElementById('s-date-from')?.value||'';
+  const stv=document.getElementById('s-date-to')?.value||'';
   const period=sm||((sf||(isEn?'Start':'البداية'))+' → '+(stv||(isEn?'End':'النهاية')));
-
-  // تجميع بالأماكن
   const byPlace={};
-  const colors=['#7c3aed','#1a73e8','#00897b','#e65100','#c2185b','#0288d1'];
+  const colors=['#7c3aed','#1a73e8','#00897b','#e65100','#c2185b','#0288d1','#558b2f','#6a1b9a'];
   let ci=0;
   list.forEach(s=>{
     const k=s.placeId+'';
     if(!byPlace[k]){byPlace[k]={name:s.placeName,shifts:[],total:0,base:0,extra:0,color:colors[ci%colors.length]};ci++;}
     byPlace[k].shifts.push(s);
-    byPlace[k].total+=s.total;
-    byPlace[k].base+=s.basePay;
-    byPlace[k].extra+=s.extraPay;
+    byPlace[k].total+=s.total; byPlace[k].base+=s.basePay; byPlace[k].extra+=s.extraPay;
   });
+  const PT={hour:isEn?'hr':'ساعة',shift:isEn?'shift':'شيفت',case:isEn?'case':'حالة'};
 
-  // بناء HTML للصورة
-  let placesRows='';
-  Object.entries(byPlace).forEach(([pid,d])=>{
-    const st2=placeTax[pid]||0,ta=d.total*st2/100,pn=d.total-ta;
-    placesRows+=`
-    <div style="margin-bottom:10px;border-radius:10px;overflow:hidden;border:1.5px solid ${d.color}55;">
-      <div style="background:${d.color};color:#fff;padding:9px 13px;display:flex;justify-content:space-between;align-items:center;">
-        <div><div style="font-size:13px;font-weight:900;">🏥 ${d.name}</div>
-        <div style="font-size:10px;opacity:.8;">${d.shifts.length} ${isEn?'shifts':'شيفت'} • ${period}</div></div>
-        <div style="text-align:left;"><div style="font-size:13px;font-weight:900;">${d.total.toLocaleString()}${cu}</div>
-        <div style="font-size:9px;opacity:.75;">${isEn?'Gross':'إجمالي'}</div></div>
-      </div>
-      <div style="background:#fff;padding:9px 13px;display:flex;gap:10px;flex-wrap:wrap;">
-        <span style="font-size:11px;color:#555;">📊 ${isEn?'Base':'أساسي'}: <b style="color:#1a73e8;">${d.base.toLocaleString()}${cu}</b></span>
-        <span style="font-size:11px;color:#555;">⚡ ${isEn?'Extra':'إضافي'}: <b style="color:#7c3aed;">${d.extra.toLocaleString()}${cu}</b></span>
-        ${st2?`<span style="font-size:11px;color:#555;">🧾 ${isEn?'Tax':'ضريبة'} ${st2}%: <b style="color:#e53935;">-${ta.toLocaleString()}${cu}</b></span>`:''}
-        <span style="font-size:12px;font-weight:900;color:${d.color};">💰 ${isEn?'Net':'صافي'}: ${pn.toLocaleString()}${cu}</span>
-      </div>
-    </div>`;
-  });
-
-  const reportDiv=document.createElement('div');
-  reportDiv.style.cssText=`
-    position:fixed;left:-9999px;top:0;
-    width:360px;padding:16px;
-    background:#0d1525;
-    font-family:Cairo,Arial,sans-serif;
-    direction:${isEn?'ltr':'rtl'};
-    border-radius:16px;
-  `;
-  reportDiv.innerHTML=`
-    <div style="background:linear-gradient(135deg,#1a1a2e,#2d1b69,#7c3aed);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;">
-      <div style="font-size:22px;font-weight:900;letter-spacing:4px;color:#00e5ff;font-family:Arial Black,Arial;">⚡ SHIFTATY</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;">${isEn?'Salary Report':'تقرير المرتب'} — ${period}</div>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <div style="flex:1;background:#162440;border-radius:10px;padding:10px 6px;text-align:center;border-top:3px solid #1a73e8;">
-        <div style="font-size:16px;font-weight:900;color:#1a73e8;">${grossTotal.toLocaleString()}</div>
-        <div style="font-size:9px;color:#546e7a;margin-top:2px;">${isEn?'Gross':'إجمالي'}${cu}</div>
-      </div>
-      <div style="flex:1;background:#162440;border-radius:10px;padding:10px 6px;text-align:center;border-top:3px solid #7c3aed;">
-        <div style="font-size:16px;font-weight:900;color:#a78bfa;">${list.length}</div>
-        <div style="font-size:9px;color:#546e7a;margin-top:2px;">${isEn?'Shifts':'شيفتات'}</div>
-      </div>
-      <div style="flex:1;background:#162440;border-radius:10px;padding:10px 6px;text-align:center;border-top:3px solid #00897b;">
-        <div style="font-size:16px;font-weight:900;color:#00e676;">${Object.keys(byPlace).length}</div>
-        <div style="font-size:9px;color:#546e7a;margin-top:2px;">${isEn?'Places':'أماكن'}</div>
-      </div>
-    </div>
-    <div style="background:linear-gradient(135deg,#162440,#1e2d4f);border:1px solid rgba(0,229,255,.15);border-radius:12px;padding:14px;text-align:center;margin-bottom:12px;">
-      <div style="font-size:11px;color:#546e7a;margin-bottom:6px;">💰 ${isEn?'Net Salary':'صافي المرتب'}${taxPct?` — ${isEn?'after':'بعد'} ${taxPct}% ${isEn?'tax':'ضريبة'}`:''}:</div>
-      <div style="font-size:30px;font-weight:900;color:#00e676;letter-spacing:1px;">${netTotal.toLocaleString()}</div>
-      <div style="font-size:11px;color:#546e7a;margin-top:3px;">${isEn?'Egyptian Pound':'جنيه مصري'}${taxAmt>0?` — ${isEn?'Tax:':'ضريبة:'} ${taxAmt.toLocaleString()}${cu}`:''}</div>
-    </div>
-    ${placesRows}
-    <div style="text-align:center;font-size:10px;color:#546e7a;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);">⚡ shiftaty.github.io</div>
-  `;
-  document.body.appendChild(reportDiv);
-
-  showToast(isEn?'⏳ Creating image...':'⏳ جاري إنشاء الصورة...');
-
-  try {
-    // انتظر html2canvas تتحمّل
-    if(typeof html2canvas==='undefined'){
-      await new Promise((res,rej)=>{
-        const sc=document.createElement('script');
-        sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        sc.onload=res; sc.onerror=rej;
-        document.head.appendChild(sc);
-      });
-    }
-    await new Promise(r=>setTimeout(r,200));
-
-    const canvas=await html2canvas(reportDiv,{
-      scale:2.5, useCORS:true, backgroundColor:'#0d1525',
-      width:360, logging:false
-    });
-    document.body.removeChild(reportDiv);
-
-    canvas.toBlob(async(blob)=>{
-      if(!blob){showToast('⚠️ '+( isEn?'Failed':'فشل'));return;}
-      const file=new File([blob],'shiftaty-report.png',{type:'image/png'});
-      const shareData={
-        files:[file],
-        title: isEn?'SHIFTATY Report':'تقرير SHIFTATY',
-        text: isEn
-          ? `My salary report ⚡ Net: ${netTotal.toLocaleString()} EGP`
-          : `تقرير مرتبي ⚡ الصافي: ${netTotal.toLocaleString()} ج`
-      };
-
-      if(navigator.canShare && navigator.canShare(shareData)){
-        try{
-          await navigator.share(shareData);
-        } catch(e){
-          if(e.name!=='AbortError') _dlCanvas(canvas,isEn);
-        }
-      } else {
-        // حمّل الصورة مباشرةً
-        _dlCanvas(canvas,isEn);
-      }
-    },'image/png');
-
-  } catch(err){
-    if(document.body.contains(reportDiv)) document.body.removeChild(reportDiv);
-    showToast(isEn?'⚠️ Error, try print instead':'⚠️ خطأ، جرّب الطباعة');
-    _buildReportHTML(false);
-  }
-}
-
-function _dlCanvas(canvas,isEn){
-  const a=document.createElement('a');
-  a.href=canvas.toDataURL('image/png');
-  a.download='shiftaty-report.png';
-  a.click();
-  showToast(isEn?'📥 Image saved! Share from gallery':'📥 الصورة اتحفظت! شاركها من الجاليري');
-}
-
-function _buildReportHTML(autoPrint){
-  const sm=document.getElementById('s-month').value;
-  const sf=document.getElementById('s-date-from')?.value||'';
-  const st=document.getElementById('s-date-to')?.value||'';
-  let list=[...shifts];
-  if(sm) list=list.filter(s=>s.date.startsWith(sm));
-  else if(sf||st) list=list.filter(s=>{if(sf&&s.date<sf)return false;if(st&&s.date>st)return false;return true;});
-  if(!list.length){showToast(currentLang==='en'?'⚠️ No data available':'⚠️ لا يوجد بيانات');return;}
-
-  const isEn = currentLang === 'en';
-  const dir2 = isEn ? 'ltr' : 'rtl';
-
-  // تجميع الشيفتات لكل مكان
-  const byPlace={};
-  const placeColors=['#1a73e8','#7c3aed','#00897b','#e65100','#c2185b','#0288d1','#558b2f','#6a1b9a'];
-  let ci=0;
-  list.forEach(s=>{
-    const k=s.placeId+'';
-    if(!byPlace[k]){byPlace[k]={name:s.placeName,shifts:[],total:0,base:0,extra:0,color:placeColors[ci%placeColors.length]};ci++;}
-    byPlace[k].shifts.push(s);
-    byPlace[k].total+=s.total;
-    byPlace[k].base+=s.basePay;
-    byPlace[k].extra+=s.extraPay;
-  });
-
-  const period = sm||((sf||(isEn?'Start':'البداية'))+' → '+(st||(isEn?'End':'النهاية')));
-  const taxPct = parseFloat(document.getElementById('tax-pct')?.value)||0;
-  const grossTotal = list.reduce((a,s)=>a+s.total,0);
-  const taxAmt = grossTotal*taxPct/100;
-  const netTotal = grossTotal-taxAmt;
-
-  // بناء جداول الأماكن
+  // جداول الأماكن — بنفس شكل الصورة
   let placesHTML='';
   Object.entries(byPlace).forEach(([pid,d])=>{
-    const color = d.color;
-    const st2 = placeTax[pid]||0;
-    const ta = d.total*st2/100;
-    const pn = d.total-ta;
-    const PT={hour:isEn?'hr':'ساعة',shift:isEn?'shift':'شيفت',case:isEn?'case':'حالة'};
-
-    const rows = d.shifts.map((s,i)=>{
+    const st2=placeTax[pid]||0, ta=d.total*st2/100, pn=d.total-ta;
+    const rows=d.shifts.map(s=>{
       const det=[];
-      if(s.count) det.push(`${s.count} ${PT[s.payType]||''} × ${(s.payPrice||0).toLocaleString()} ${isEn?'EGP':'ج'}`);
-      if(s.exHC)  det.push(`⚡ ${s.exHC} ${s.exHourName||'إضافي'}`);
-      if(s.exCC)  det.push(`🩺 ${s.exCC} ${s.exCaseName||'عادية'}`);
-      if(s.exTC)  det.push(`🔬 ${s.exTC} ${s.exTechName||'تكنيك'}`);
-      if(s.exOC)  det.push(`🔷 ${s.exOC} ${s.exOtherName||'أخرى'}`);
-      if(s.customExtras) s.customExtras.forEach(r=>{if(r.count)det.push(`➕ ${r.count} ${r.name}`);});
-      const bg = i%2===0 ? '#fff' : '#f7f9ff';
-      return `<tr style="background:${bg};">
-        <td style="color:#333;font-size:.75rem;padding:7px 10px;border-bottom:1px solid #eef0f8;">${fmtDate(s.date)}</td>
-        <td style="color:#444;font-size:.73rem;padding:7px 10px;border-bottom:1px solid #eef0f8;">${det.join(' · ')}</td>
-        <td style="color:#1a73e8;font-weight:700;font-size:.75rem;padding:7px 10px;border-bottom:1px solid #eef0f8;text-align:center;">${(s.basePay||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
-        <td style="color:#7c3aed;font-weight:700;font-size:.75rem;padding:7px 10px;border-bottom:1px solid #eef0f8;text-align:center;">${(s.extraPay||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
-        <td style="color:#1a7a3e;font-weight:800;font-size:.78rem;padding:7px 10px;border-bottom:1px solid #eef0f8;text-align:center;">${(s.total||0).toLocaleString()} ${isEn?'EGP':'ج'}</td>
+      if(s.count) det.push(`${s.count} ${PT[s.payType]||''} × ${(s.payPrice||0).toLocaleString()}${cu}`);
+      if(s.exHC)  det.push(`${s.exHC} ${s.exHourName||'إضافي'}`);
+      if(s.exCC)  det.push(`${s.exCC} ${s.exCaseName||'حالة'}`);
+      if(s.exTC)  det.push(`${s.exTC} ${s.exTechName||'تكنيك'}`);
+      if(s.exOC)  det.push(`${s.exOC} ${s.exOtherName||'أخرى'}`);
+      if(s.customExtras) s.customExtras.forEach(r=>{if(r.count)det.push(`${r.count} ${r.name}`);});
+      return `<tr>
+        <td class="td-date">${fmtDate(s.date)}</td>
+        <td class="td-det">${det.join(' · ')}</td>
+        <td class="td-amt">${(s.total||0).toLocaleString()}${cu}</td>
       </tr>`;
     }).join('');
-
+    const netRow = st2
+      ? `<tr class="tr-net"><td colspan="2" class="td-netlbl">💰 ${isEn?'Net':'الصافي'}: ${pn.toLocaleString()}${cu} <span class="tax-note">(${isEn?'tax':'ضريبة'} ${st2}%)</span></td><td class="td-netval">${pn.toLocaleString()}${cu}</td></tr>`
+      : `<tr class="tr-net"><td colspan="2" class="td-netlbl">💰 ${isEn?'Net':'الصافي'}:</td><td class="td-netval">${pn.toLocaleString()}${cu}</td></tr>`;
     placesHTML+=`
-    <div style="margin-bottom:16px;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);border:1px solid ${color}33;">
-      <!-- هيدر المكان -->
-      <div style="background:linear-gradient(135deg,${color},${color}cc);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:.92rem;font-weight:900;">🏥 ${d.name}</div>
-          <div style="font-size:.7rem;opacity:.85;margin-top:2px;">${d.shifts.length} ${isEn?'shifts':'شيفت'} &nbsp;|&nbsp; ${period}</div>
-        </div>
-        <div style="text-align:${isEn?'right':'left'};">
-          <div style="font-size:1rem;font-weight:900;">${d.total.toLocaleString()} ${isEn?'EGP':'ج'}</div>
-          <div style="font-size:.65rem;opacity:.8;">${isEn?'Gross':'الإجمالي'}</div>
-        </div>
+    <div class="place-block">
+      <div class="place-hdr" style="background:${d.color};">
+        <span class="place-name">🏥 ${d.name}</span>
+        <span class="place-total">${d.total.toLocaleString()}${cu}</span>
       </div>
-      <!-- الجدول -->
-      <table style="width:100%;border-collapse:collapse;background:#fff;">
-        <thead>
-          <tr style="background:#f0f4ff;">
-            <th style="padding:7px 10px;font-size:.68rem;font-weight:800;color:#555;text-align:${isEn?'left':'right'};border-bottom:2px solid ${color}44;">${isEn?'Date':'التاريخ'}</th>
-            <th style="padding:7px 10px;font-size:.68rem;font-weight:800;color:#555;text-align:${isEn?'left':'right'};border-bottom:2px solid ${color}44;">${isEn?'Details':'التفاصيل'}</th>
-            <th style="padding:7px 10px;font-size:.68rem;font-weight:800;color:#1a73e8;text-align:center;border-bottom:2px solid ${color}44;">${isEn?'Base':'الأساسي'}</th>
-            <th style="padding:7px 10px;font-size:.68rem;font-weight:800;color:#7c3aed;text-align:center;border-bottom:2px solid ${color}44;">${isEn?'Extra':'الإضافي'}</th>
-            <th style="padding:7px 10px;font-size:.68rem;font-weight:800;color:#1a7a3e;text-align:center;border-bottom:2px solid ${color}44;">${isEn?'Total':'الإجمالي'}</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        <tfoot>
-          <tr style="background:#f8f0ff;">
-            <td colspan="2" style="padding:8px 10px;font-size:.74rem;font-weight:700;color:#7c3aed;">
-              🧾 ${isEn?'Tax':'الضريبة'}: ${st2}% &nbsp;—&nbsp; ${isEn?'Deduct:':'خصم:'} <span style="color:#c0392b;">${ta.toLocaleString()} ${isEn?'EGP':'ج'}</span>
-            </td>
-            <td style="padding:8px 10px;font-size:.74rem;font-weight:800;color:#1a73e8;text-align:center;">${d.base.toLocaleString()} ${isEn?'EGP':'ج'}</td>
-            <td style="padding:8px 10px;font-size:.74rem;font-weight:800;color:#7c3aed;text-align:center;">${d.extra.toLocaleString()} ${isEn?'EGP':'ج'}</td>
-            <td style="padding:8px 10px;font-size:.82rem;font-weight:900;color:${color};text-align:center;">💰 ${isEn?'Net:':'صافي:'} ${pn.toLocaleString()} ${isEn?'EGP':'ج'}</td>
-          </tr>
-        </tfoot>
-      </table>
+      <table class="place-tbl"><tbody>${rows}${netRow}</tbody></table>
     </div>`;
   });
 
-  const html=`<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html dir="${dir2}" lang="${currentLang}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SHIFTATY — ${isEn?'Salary Report':'تقرير المرتب'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
-  @page{margin:8mm 10mm;}
+  @page{margin:8mm 12mm;}
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:Cairo,Arial,sans-serif;background:#f0f2f8;color:#1a1a2e;direction:${dir2};-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .page{max-width:820px;margin:0 auto;padding:16px;}
+  body{
+    font-family:Cairo,Arial,sans-serif;
+    background:#f2f3f8;
+    color:#1a1a2e;
+    direction:${dir2};
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .page{max-width:680px;margin:0 auto;padding:20px;}
 
-  /* ── HEADER ── */
+  /* ── الهيدر ── */
   .rpt-hdr{
-    background:linear-gradient(135deg,#1a1a2e 0%,#2d1b69 50%,#7c3aed 100%);
-    color:#fff;padding:18px 22px;border-radius:14px;margin-bottom:12px;
-    text-align:center;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#1a1a2e 0%,#2d1b69 55%,#7c3aed 100%);
+    color:#fff;padding:22px;border-radius:16px;margin-bottom:14px;
+    text-align:center;
     -webkit-print-color-adjust:exact;print-color-adjust:exact;
   }
-  .rpt-hdr::before{content:'';position:absolute;inset:0;
-    background:linear-gradient(rgba(0,229,255,0.04) 1px,transparent 1px),
-               linear-gradient(90deg,rgba(0,229,255,0.04) 1px,transparent 1px);
-    background-size:28px 28px;}
-  .rpt-hdr h1{font-size:1.8rem;font-weight:900;letter-spacing:5px;font-family:Arial Black,Arial;color:#00e5ff;
-    text-shadow:0 0 15px rgba(0,229,255,0.4);position:relative;}
-  .rpt-hdr .sub{font-size:.78rem;color:rgba(255,255,255,0.65);margin-top:5px;position:relative;}
+  .rpt-hdr h1{
+    font-size:2rem;font-weight:900;letter-spacing:6px;
+    font-family:'Arial Black',Arial,sans-serif;
+    color:#00e5ff;
+  }
+  .rpt-hdr .sub{font-size:.8rem;color:rgba(255,255,255,.6);margin-top:6px;}
 
-  /* ── STAT CARDS ── */
-  .sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
-  .sc{background:#fff;border-radius:12px;padding:12px 8px;text-align:center;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);border-top:3px solid;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .sc .sv{font-size:1.3rem;font-weight:900;margin-bottom:3px;}
-  .sc .sl{font-size:.65rem;color:#888;font-weight:600;}
-
-  /* ── NET CARD ── */
-  .nc{
-    background:linear-gradient(135deg,#1a1a2e 0%,#7c3aed 100%);
-    color:#fff;border-radius:14px;padding:16px 20px;text-align:center;margin-bottom:14px;
+  /* ── بطاقات الإحصاء ── */
+  .stats-row{display:flex;gap:10px;margin-bottom:14px;}
+  .stat-card{
+    flex:1;background:#fff;border-radius:12px;padding:14px 8px;
+    text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.07);
+    border-top:3px solid;
     -webkit-print-color-adjust:exact;print-color-adjust:exact;
   }
-  .nc .nl{font-size:.76rem;opacity:.8;margin-bottom:6px;}
-  .nc .nv{font-size:2.2rem;font-weight:900;color:#00e676;letter-spacing:1px;}
-  .nc .nd{font-size:.73rem;opacity:.6;margin-top:5px;}
+  .stat-card .sv{font-size:1.5rem;font-weight:900;margin-bottom:3px;}
+  .stat-card .sl{font-size:.7rem;color:#888;font-weight:600;}
+
+  /* ── بطاقة الصافي ── */
+  .net-card{
+    background:linear-gradient(135deg,#1a1a2e 0%,#3b0f8c 60%,#7c3aed 100%);
+    color:#fff;border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .net-card .nl{font-size:.82rem;opacity:.75;margin-bottom:8px;}
+  .net-card .nv{font-size:2.6rem;font-weight:900;color:#00e676;letter-spacing:1px;}
+  .net-card .nd{font-size:.75rem;opacity:.55;margin-top:5px;}
+
+  /* ── بلوك كل مكان ── */
+  .place-block{
+    margin-bottom:14px;border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 2px 12px rgba(0,0,0,.1);
+    background:#fff;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    break-inside:avoid;
+  }
+  .place-hdr{
+    color:#fff;padding:12px 16px;
+    display:flex;justify-content:space-between;align-items:center;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .place-name{font-size:1rem;font-weight:900;}
+  .place-total{font-size:1rem;font-weight:900;}
+
+  /* ── الجدول ── */
+  .place-tbl{width:100%;border-collapse:collapse;}
+  .place-tbl tr{border-bottom:1px solid #f0f0f8;}
+  .place-tbl tr:last-child{border-bottom:none;}
+  .td-date{padding:9px 14px;font-size:.8rem;color:#555;width:90px;}
+  .td-det{padding:9px 14px;font-size:.8rem;color:#444;}
+  .td-amt{padding:9px 14px;font-size:.85rem;font-weight:800;color:#00897b;text-align:${isEn?'right':'left'};}
+  .tr-net{background:#f8f5ff;}
+  .td-netlbl{padding:10px 14px;font-size:.85rem;font-weight:900;color:#7c3aed;}
+  .td-netval{padding:10px 14px;font-size:.9rem;font-weight:900;color:#7c3aed;text-align:${isEn?'right':'left'};}
+  .tax-note{font-size:.72rem;opacity:.7;font-weight:600;}
+
+  /* ── فوتر ── */
+  .footer{text-align:center;font-size:.72rem;color:#aaa;margin-top:12px;padding-top:10px;border-top:1px solid #e0e0e8;}
 
   @media print{
-    body{background:#f0f2f8!important;}
-    .rpt-hdr,.nc,.sc{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-    div[style*="background:linear-gradient"]{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+    body{background:#f2f3f8!important;}
+    .rpt-hdr,.net-card,.stat-card,.place-hdr{
+      -webkit-print-color-adjust:exact!important;
+      print-color-adjust:exact!important;
+    }
+    .place-block{break-inside:avoid;}
   }
 </style>
 </head>
@@ -1712,45 +1569,134 @@ function _buildReportHTML(autoPrint){
 <div class="page">
 
   <div class="rpt-hdr">
-    <h1>⚡ SHIFTATY</h1>
-    <div class="sub">${isEn?'Salary Report':'تقرير المرتب'} &nbsp;←&nbsp; ${isEn?'Earnings':'الإجمالي'} &nbsp;←&nbsp; ${isEn?'Summary':'النهاية'}</div>
+    <h1>SHIFTATY ⚡</h1>
+    <div class="sub">${isEn?'Salary Report':'تقرير المرتب'} ← ${isEn?'Earnings':'البداية'} → ${isEn?'Summary':'النهاية'}</div>
   </div>
 
-  <div class="sg">
-    <div class="sc" style="border-color:#1a73e8;">
-      <div class="sv" style="color:#1a73e8;">${grossTotal.toLocaleString()} <span style="font-size:.9rem;">${isEn?'EGP':'ج'}</span></div>
-      <div class="sl">${isEn?'Grand Total':'الإجمالي الكلي'}</div>
-    </div>
-    <div class="sc" style="border-color:#7c3aed;">
-      <div class="sv" style="color:#7c3aed;">${list.length}</div>
-      <div class="sl">${isEn?'Total Shifts':'إجمالي الشيفتات'}</div>
-    </div>
-    <div class="sc" style="border-color:#00897b;">
+  <div class="stats-row">
+    <div class="stat-card" style="border-color:#00897b;">
       <div class="sv" style="color:#00897b;">${Object.keys(byPlace).length}</div>
-      <div class="sl">${isEn?'Workplaces':'أماكن العمل'}</div>
+      <div class="sl">${isEn?'Places':'أماكن'}</div>
+    </div>
+    <div class="stat-card" style="border-color:#7c3aed;">
+      <div class="sv" style="color:#7c3aed;">${list.length}</div>
+      <div class="sl">${isEn?'Shifts':'شيفتات'}</div>
+    </div>
+    <div class="stat-card" style="border-color:#1a73e8;">
+      <div class="sv" style="color:#1a73e8;">${grossTotal.toLocaleString()}</div>
+      <div class="sl">${isEn?'Gross':'الإجمالي'} ${cu}</div>
     </div>
   </div>
 
-  <div class="nc">
-    <div class="nl">💰 ${isEn?'Net Salary After Tax':'صافي المرتب بعد الضريبة'} (${taxPct}%)</div>
+  <div class="net-card">
+    <div class="nl">💰 ${isEn?'Net Salary':'صافي المرتب'}${taxPct?` (${isEn?'after':'بعد'} ${taxPct}% ${isEn?'tax':'ضريبة'})`:''}:</div>
     <div class="nv">${netTotal.toLocaleString()} ${isEn?'EGP':'جنيه'}</div>
-    ${taxAmt>0?`<div class="nd">${isEn?'Tax Deduction:':'خصم ضريبة:'} ${taxAmt.toLocaleString()} ${isEn?'EGP':'ج'}</div>`:''}
+    ${taxAmt>0?`<div class="nd">${isEn?'Tax deducted:':'ضريبة مخصومة:'} ${taxAmt.toLocaleString()}${cu}</div>`:''}
   </div>
 
   ${placesHTML}
 
+  <div class="footer">⚡ shiftaty.github.io</div>
+
 </div>
-${autoPrint?'<script>window.onload=function(){window.print();}<\/script>':''}
+${autoPrint?'<script>window.onload=function(){setTimeout(function(){window.print();},600);}<\/script>':''}
 </body>
 </html>`;
+}
 
+// ══ فتح نافذة الطباعة ══
+function _openReportWindow(autoPrint){
+  const list=_getReportData();
+  if(!list.length){showToast(currentLang==='en'?'⚠️ No data':'⚠️ لا يوجد بيانات');return;}
+  const isEn=currentLang==='en';
+  const html=_buildReportHTML(list,isEn,autoPrint);
   const win=window.open('','_blank');
   if(!win){showToast('⚠️ افتح الـ popup في المتصفح');return;}
   win.document.write(html);
   win.document.close();
 }
 
-// ── مشاركة التطبيق ──
+// ══ مشاركة التقرير كصورة ══
+async function _shareReportAsImage(){
+  const list=_getReportData();
+  if(!list.length){showToast(currentLang==='en'?'⚠️ No data':'⚠️ لا يوجد بيانات');return;}
+  const isEn=currentLang==='en';
+  const taxPct=parseFloat(document.getElementById('tax-pct')?.value)||0;
+  const grossTotal=list.reduce((a,s)=>a+s.total,0);
+  const netTotal=grossTotal-grossTotal*taxPct/100;
+  const cu=isEn?' EGP':' ج';
+
+  showToast(isEn?'⏳ جاري إنشاء الصورة...':'⏳ جاري إنشاء الصورة...');
+
+  // تحميل html2canvas لو مش محملة
+  if(typeof html2canvas==='undefined'){
+    await new Promise((res,rej)=>{
+      const sc=document.createElement('script');
+      sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      sc.onload=res; sc.onerror=()=>rej(new Error('load'));
+      document.head.appendChild(sc);
+    }).catch(()=>{});
+  }
+
+  // نبني iframe مخفي فيه التقرير
+  const reportHTML=_buildReportHTML(list,isEn,false);
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:fixed;left:-9999px;top:0;width:700px;height:10px;opacity:0;pointer-events:none;border:none;';
+  document.body.appendChild(iframe);
+
+  await new Promise(res=>{
+    iframe.onload=()=>setTimeout(res,800);
+    iframe.srcdoc=reportHTML;
+    setTimeout(res,3000);
+  });
+
+  const iDoc=iframe.contentDocument||iframe.contentWindow.document;
+  const scrollH=Math.max(iDoc.body.scrollHeight,300);
+  iframe.style.height=scrollH+'px';
+  await new Promise(r=>setTimeout(r,400));
+
+  try{
+    const canvas=await html2canvas(iDoc.documentElement,{
+      scale:2.5, useCORS:true, allowTaint:true,
+      backgroundColor:'#f2f3f8',
+      width:700, height:scrollH,
+      windowWidth:700, windowHeight:scrollH,
+      scrollX:0, scrollY:0, logging:false
+    });
+    document.body.removeChild(iframe);
+
+    canvas.toBlob(async(blob)=>{
+      if(!blob){showToast('⚠️ فشل');return;}
+      const file=new File([blob],'shiftaty-report.png',{type:'image/png'});
+      const sd={
+        files:[file],
+        title:isEn?'SHIFTATY Salary Report':'تقرير مرتب SHIFTATY',
+        text:isEn?`Net Salary: ${netTotal.toLocaleString()} EGP ⚡`:`صافي المرتب: ${netTotal.toLocaleString()}${cu} ⚡`
+      };
+      if(navigator.canShare&&navigator.canShare(sd)){
+        try{ await navigator.share(sd); }
+        catch(e){ if(e.name!=='AbortError') _dlImg(canvas,isEn); }
+      } else {
+        _dlImg(canvas,isEn);
+      }
+    },'image/png');
+  } catch(e){
+    if(document.body.contains(iframe)) document.body.removeChild(iframe);
+    // fallback: افتح نافذة عادية
+    _openReportWindow(false);
+  }
+}
+
+function _dlImg(canvas,isEn){
+  const a=document.createElement('a');
+  a.href=canvas.toDataURL('image/png');
+  a.download='shiftaty-report.png';
+  a.click();
+  showToast(isEn?'📥 Image saved! Share from gallery':'📥 الصورة اتحفظت! شاركها من الجاليري');
+}
+
+
+// ── LANGUAGE SYSTEM ──
 let currentLang = localStorage.getItem('sj_lang') || 'ar';
 
 const T = {
