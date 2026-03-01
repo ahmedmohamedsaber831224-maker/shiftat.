@@ -531,7 +531,7 @@
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
       <button class="btn btn-pdf" onclick="printReport()"><span id="print-btn-lbl">🖨️ طباعة</span></button>
-      <button class="btn" onclick="exportPDF()" style="background:linear-gradient(135deg,#1a73e8,#00e5ff);color:#fff;width:100%;padding:15px;font-size:.95rem;"><span id="export-pdf-lbl">📄 تصدير PDF</span></button>
+      <button class="btn" onclick="exportPDF()" style="background:linear-gradient(135deg,#25d366,#00e5ff);color:#fff;width:100%;padding:15px;font-size:.95rem;"><span id="export-pdf-lbl">📤 تصدير ومشاركة</span></button>
     </div>
     <div style="height:10px;"></div>
   </div>
@@ -947,16 +947,17 @@ function handleInstall(type){
   }
 }
 function shareApp(){
-  const url = window.location.href;
-  const text = 'SHIFTATY ⚡ — تتبع ساعات عملك وأرباحك في كل مكان';
+  const appUrl = 'https://shiftaty.github.io/shiftat/index.html';
+  const title = '⚡ SHIFTATY';
+  const text = 'shiftaty.github.io';
   if(navigator.share){
-    navigator.share({ title: 'SHIFTATY', text: text, url: url })
+    navigator.share({ title: title, text: text, url: appUrl })
       .catch(()=>{});
   } else {
-    navigator.clipboard?.writeText(url).then(()=>{
+    navigator.clipboard?.writeText(appUrl).then(()=>{
       showToast('📋 تم نسخ الرابط — شاركه مع زملائك!');
     }).catch(()=>{
-      prompt('انسخ الرابط:', url);
+      prompt('انسخ الرابط:', appUrl);
     });
   }
 }
@@ -1404,7 +1405,203 @@ function printReport(){
 }
 
 function exportPDF(){
-  _buildAndOpenReport(false);
+  // نبني التقرير كـ HTML ثم نحوله لصورة ونشاركه
+  _buildReportImage();
+}
+
+async function _buildReportImage(){
+  const sm=document.getElementById('s-month').value;
+  const sf=document.getElementById('s-date-from')?.value||'';
+  const stv=document.getElementById('s-date-to')?.value||'';
+  let list=[...shifts];
+  if(sm) list=list.filter(s=>s.date.startsWith(sm));
+  else if(sf||stv) list=list.filter(s=>{if(sf&&s.date<sf)return false;if(stv&&s.date>stv)return false;return true;});
+  if(!list.length){showToast(currentLang==='en'?'⚠️ No data available':'⚠️ لا يوجد بيانات');return;}
+
+  const isEn = currentLang==='en';
+  const taxPct = parseFloat(document.getElementById('tax-pct')?.value)||0;
+  const grossTotal = list.reduce((a,s)=>a+s.total,0);
+  const taxAmt = grossTotal*taxPct/100;
+  const netTotal = grossTotal-taxAmt;
+  const period = sm||((sf||(isEn?'Start':'البداية'))+' → '+(stv||(isEn?'End':'النهاية')));
+  const cu = isEn?' EGP':'ج';
+
+  // تجميع بالأماكن
+  const byPlace={};
+  const placeColors=['#1a73e8','#7c3aed','#00897b','#e65100','#c2185b','#0288d1'];
+  let ci=0;
+  list.forEach(s=>{
+    const k=s.placeId+'';
+    if(!byPlace[k]){byPlace[k]={name:s.placeName,shifts:[],total:0,base:0,extra:0,color:placeColors[ci%placeColors.length]};ci++;}
+    byPlace[k].shifts.push(s);
+    byPlace[k].total+=s.total;byPlace[k].base+=s.basePay;byPlace[k].extra+=s.extraPay;
+  });
+
+  const PT={hour:isEn?'hr':'ساعة',shift:isEn?'shift':'شيفت',case:isEn?'case':'حالة'};
+
+  let placesHTML='';
+  Object.entries(byPlace).forEach(([pid,d])=>{
+    const st2=placeTax[pid]||0,ta=d.total*st2/100,pn=d.total-ta;
+    const rowsHtml=d.shifts.map((s,i)=>{
+      const det=[];
+      if(s.count) det.push(`${s.count} ${PT[s.payType]||''} × ${(s.payPrice||0).toLocaleString()}${cu}`);
+      if(s.exHC) det.push(`⚡${s.exHC} ${s.exHourName||'إضافي'}`);
+      if(s.exCC) det.push(`🩺${s.exCC} ${s.exCaseName||'عادية'}`);
+      if(s.exTC) det.push(`🔬${s.exTC}`);
+      if(s.customExtras) s.customExtras.forEach(r=>{if(r.count)det.push(`➕${r.count} ${r.name}`);});
+      return `<tr style="background:${i%2===0?'#fff':'#f7f9ff'}">
+        <td style="padding:5px 8px;font-size:11px;color:#333;">${fmtDate(s.date)}</td>
+        <td style="padding:5px 8px;font-size:10px;color:#444;">${det.join(' · ')}</td>
+        <td style="padding:5px 8px;font-size:11px;font-weight:700;color:#1a7a3e;text-align:center;">${(s.total||0).toLocaleString()}${cu}</td>
+      </tr>`;
+    }).join('');
+    placesHTML+=`<div style="margin-bottom:12px;border-radius:10px;overflow:hidden;border:2px solid ${d.color}44;">
+      <div style="background:${d.color};color:#fff;padding:8px 12px;display:flex;justify-content:space-between;">
+        <b>🏥 ${d.name}</b><span>${d.total.toLocaleString()}${cu}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">${rowsHtml}
+        <tr style="background:#f0f4ff;font-weight:800;">
+          <td colspan="2" style="padding:6px 8px;font-size:11px;">💰 ${isEn?'Net':'الصافي'}: ${pn.toLocaleString()}${cu} ${st2?`(ضريبة ${st2}%)`:''}
+          </td>
+          <td style="padding:6px 8px;text-align:center;font-size:11px;color:${d.color};font-weight:900;">${pn.toLocaleString()}${cu}</td>
+        </tr>
+      </table>
+    </div>`;
+  });
+
+  const reportHTML=`<!DOCTYPE html><html dir="${isEn?'ltr':'rtl'}" lang="${currentLang}">
+<head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Cairo,Arial,sans-serif;background:#f0f2f8;padding:16px;width:600px;}</style>
+</head><body>
+<div style="background:linear-gradient(135deg,#1a1a2e,#7c3aed);color:#fff;padding:16px;border-radius:12px;margin-bottom:12px;text-align:center;">
+  <div style="font-size:22px;font-weight:900;letter-spacing:4px;color:#00e5ff;">⚡ SHIFTATY</div>
+  <div style="font-size:12px;opacity:.7;margin-top:4px;">${isEn?'Salary Report':'تقرير المرتب'} — ${period}</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+  <div style="background:#fff;border-radius:10px;padding:10px;text-align:center;border-top:3px solid #1a73e8;">
+    <div style="font-size:18px;font-weight:900;color:#1a73e8;">${grossTotal.toLocaleString()}</div>
+    <div style="font-size:10px;color:#888;">${isEn?'Gross':'الإجمالي'} ${cu}</div>
+  </div>
+  <div style="background:#fff;border-radius:10px;padding:10px;text-align:center;border-top:3px solid #7c3aed;">
+    <div style="font-size:18px;font-weight:900;color:#7c3aed;">${list.length}</div>
+    <div style="font-size:10px;color:#888;">${isEn?'Shifts':'شيفتات'}</div>
+  </div>
+  <div style="background:#fff;border-radius:10px;padding:10px;text-align:center;border-top:3px solid #00897b;">
+    <div style="font-size:18px;font-weight:900;color:#00897b;">${Object.keys(byPlace).length}</div>
+    <div style="font-size:10px;color:#888;">${isEn?'Places':'أماكن'}</div>
+  </div>
+</div>
+<div style="background:linear-gradient(135deg,#1a1a2e,#7c3aed);color:#fff;border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;">
+  <div style="font-size:11px;opacity:.8;margin-bottom:4px;">💰 ${isEn?'Net Salary':'صافي المرتب'}${taxPct?` (${isEn?'after':'بعد'} ${taxPct}% ${isEn?'tax':'ضريبة'})`:''}:</div>
+  <div style="font-size:28px;font-weight:900;color:#00e676;">${netTotal.toLocaleString()} ${isEn?'EGP':'جنيه'}</div>
+  ${taxAmt>0?`<div style="font-size:10px;opacity:.6;margin-top:3px;">${isEn?'Tax:':'ضريبة:'} ${taxAmt.toLocaleString()}${cu}</div>`:''}
+</div>
+${placesHTML}
+<div style="text-align:center;font-size:10px;color:#aaa;margin-top:8px;">shiftaty.github.io</div>
+</body></html>`;
+
+  // فتح نافذة مؤقتة لعمل screenshot
+  showToast(isEn?'⏳ Generating image...':'⏳ جاري إنشاء الصورة...');
+
+  try {
+    // استخدام html2canvas لو متاح
+    if(typeof html2canvas !== 'undefined'){
+      await _shareViaCanvas(reportHTML, isEn, netTotal, period);
+      return;
+    }
+    // لو مش متاح: حمّل html2canvas ديناميكياً
+    await new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      script.onload=resolve; script.onerror=reject;
+      document.head.appendChild(script);
+    });
+    await _shareViaCanvas(reportHTML, isEn, netTotal, period);
+  } catch(e) {
+    // Fallback: فتح في نافذة جديدة مع تعليمات
+    const win=window.open('','_blank');
+    if(win){
+      win.document.write(reportHTML);
+      win.document.close();
+      setTimeout(()=>{
+        try{ win.print(); }catch(e2){}
+      },500);
+    } else {
+      showToast(isEn?'⚠️ Enable popups':'⚠️ افتح الـ popup في المتصفح');
+    }
+  }
+}
+
+async function _shareViaCanvas(reportHTML, isEn, netTotal, period){
+  // إنشاء iframe مخفي لعرض التقرير
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText='position:fixed;left:-9999px;top:0;width:620px;height:1px;opacity:0;pointer-events:none;';
+  document.body.appendChild(iframe);
+
+  await new Promise(resolve=>{
+    iframe.onload=resolve;
+    iframe.srcdoc=reportHTML;
+    setTimeout(resolve,2000); // backup timeout
+  });
+
+  // انتظر لود الـ fonts
+  await new Promise(r=>setTimeout(r,800));
+
+  const iframeDoc=iframe.contentDocument||iframe.contentWindow.document;
+  const iframeBody=iframeDoc.body;
+  const scrollH=Math.max(iframeBody.scrollHeight,iframeDoc.documentElement.scrollHeight,400);
+  iframe.style.height=scrollH+'px';
+  await new Promise(r=>setTimeout(r,300));
+
+  const canvas=await html2canvas(iframeDoc.documentElement,{
+    scale:2, useCORS:true, allowTaint:true,
+    width:620, height:scrollH, windowWidth:620,
+    scrollX:0, scrollY:0,
+    logging:false,
+    backgroundColor:'#f0f2f8'
+  });
+  iframe.remove();
+
+  canvas.toBlob(async(blob)=>{
+    if(!blob){showToast(isEn?'⚠️ Failed to create image':'⚠️ فشل إنشاء الصورة');return;}
+    const file = new File([blob], 'shiftaty-report.png', {type:'image/png'});
+    const shareData={
+      title: isEn?'SHIFTATY Salary Report':'تقرير مرتب SHIFTATY',
+      text: isEn
+        ? `My salary report — Net: ${netTotal.toLocaleString()} EGP\nvia SHIFTATY ⚡`
+        : `تقرير مرتبي — الصافي: ${netTotal.toLocaleString()} جنيه\nمن تطبيق SHIFTATY ⚡`,
+      files:[file]
+    };
+
+    if(navigator.canShare && navigator.canShare(shareData)){
+      try{
+        await navigator.share(shareData);
+        showToast(isEn?'✅ Shared successfully!':'✅ تم المشاركة!');
+      } catch(e){
+        if(e.name!=='AbortError') _downloadCanvas(canvas, isEn);
+      }
+    } else if(navigator.share){
+      // جرب بدون ملف
+      try{
+        await navigator.share({title:shareData.title, text:shareData.text, url:'https://shiftaty.github.io/shiftat/'});
+      } catch(e){}
+      // وحمّل الصورة
+      _downloadCanvas(canvas, isEn);
+    } else {
+      // مباشر تحميل
+      _downloadCanvas(canvas, isEn);
+      showToast(isEn?'📥 Image saved! Share it from your gallery':'📥 تم حفظ الصورة! شاركها من الجاليري');
+    }
+  }, 'image/png');
+}
+
+function _downloadCanvas(canvas, isEn){
+  const link=document.createElement('a');
+  link.download='shiftaty-report.png';
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+  showToast(isEn?'📥 Image downloaded':'📥 تم تحميل الصورة');
 }
 
 function _buildAndOpenReport(autoPrint){
@@ -1612,7 +1809,7 @@ const T = {
     shift_title: 'تسجيل شيفت جديد', select_place: 'اختر مكان العمل',
     date: 'التاريخ', pay_per: 'الأجر لكل', pay_price: 'السعر', count: 'العدد',
     extras: '⚡ الإضافي', notes: 'ملاحظات', save_shift: '💾 حفظ الشيفت',
-    summary: 'ملخص المرتب', print: '<span id="print-btn-lbl">🖨️ طباعة</span>', export_pdf: '<span id="export-pdf-lbl">📄 تصدير PDF</span>',
+    summary: 'ملخص المرتب', print: '<span id="print-btn-lbl">🖨️ طباعة</span>', export_pdf: '<span id="export-pdf-lbl">📤 تصدير ومشاركة</span>',
     total: 'الإجمالي الكلي', tax: 'مجموع الضرائب', net: '💰 الصافي الكلي',
     all_places: 'كل الأماكن', by_place: 'لكل مكان',
     no_shifts: 'لا يوجد شيفتات مسجلة', shifts: 'شيفت',
@@ -1639,7 +1836,7 @@ const T = {
     shift_title: 'Log New Shift', select_place: 'Select Workplace',
     date: 'Date', pay_per: 'Pay Per', pay_price: 'Price', count: 'Count',
     extras: '⚡ Extras', notes: 'Notes', save_shift: '💾 Save Shift',
-    summary: 'Salary Summary', print: '🖨️ Print', export_pdf: '📄 Export PDF',
+    summary: 'Salary Summary', print: '🖨️ Print', export_pdf: '📤 Export & Share',
     total: 'Gross Total', tax: 'Total Tax', net: '💰 Net Total',
     all_places: 'All Places', by_place: 'Per Place',
     no_shifts: 'No shifts recorded', shifts: 'shifts',
@@ -1782,7 +1979,7 @@ function applyLang(){
 
   // ── PRINT / PDF BUTTONS ──
   s('print-btn-lbl',   isEn ? '🖨️ Print'      : '🖨️ طباعة');
-  s('export-pdf-lbl',  isEn ? '📄 Export PDF'  : '📄 تصدير PDF');
+  s('export-pdf-lbl',  isEn ? '📤 Export & Share'  : '📤 تصدير ومشاركة');
 
   // ── SHIFTS PANEL filter placeholder ──
   const fPlaceEl = document.getElementById('f-place');
